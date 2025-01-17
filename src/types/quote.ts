@@ -1,15 +1,17 @@
 export interface QuoteFormData {
   propertyType: string;
   squareFootage: string;
-  bedrooms: string;
-  bathrooms: string;
-  areas: string[];
+  residentialAreas: Record<string, number>;
+  commercialAreas: Record<string, number>;
+  otherAreas: string[];
+  customAreaName: string;
+  extraServices: string[];
   frequency: string;
   preferredDay: string;
   preferredTime: string;
   specialRequirements: string;
-  hasPets: boolean;
-  petDetails?: string;
+  hasPets: boolean | undefined;
+  petDetails: string;
   accessInstructions: string;
 }
 
@@ -17,7 +19,7 @@ export interface Question {
   id: string;
   title: string;
   description?: string;
-  type: 'select' | 'number' | 'multiselect' | 'text' | 'radio' | 'time' | 'boolean';
+  type: 'select' | 'number' | 'counter' | 'text' | 'radio' | 'time' | 'boolean' | 'multiselect';
   options?: { value: string; label: string }[];
   validation?: {
     required?: boolean;

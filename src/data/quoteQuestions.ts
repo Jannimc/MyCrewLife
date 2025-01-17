@@ -30,26 +30,10 @@ export const questions: Question[] = [
     validation: { required: true }
   },
   {
-    id: 'bedrooms',
-    title: 'How many bedrooms need cleaning?',
-    type: 'number',
-    validation: { required: true, min: 0, max: 10 },
-    conditional: {
-      field: 'propertyType',
-      value: ['house', 'apartment']
-    }
-  },
-  {
-    id: 'bathrooms',
-    title: 'How many bathrooms need cleaning?',
-    type: 'number',
-    validation: { required: true, min: 0, max: 10 }
-  },
-  {
-    id: 'areas',
+    id: 'residentialAreas',
     title: 'Which areas need cleaning?',
-    description: 'Select all areas that require cleaning',
-    type: 'multiselect',
+    description: 'Select the number of each area that needs cleaning',
+    type: 'counter',
     options: [
       { value: 'kitchen', label: 'Kitchen' },
       { value: 'livingRoom', label: 'Living Room' },
@@ -60,7 +44,76 @@ export const questions: Question[] = [
       { value: 'basement', label: 'Basement' },
       { value: 'garage', label: 'Garage' }
     ],
-    validation: { required: true }
+    validation: { required: true },
+    conditional: {
+      field: 'propertyType',
+      value: ['house', 'apartment']
+    }
+  },
+  {
+    id: 'extraServices',
+    title: 'Would you like any extra services?',
+    description: 'These additional services are available at an extra cost',
+    type: 'multiselect',
+    options: [
+      { value: 'ironing', label: 'Ironing Service' },
+      { value: 'laundry', label: 'Laundry Service' },
+      { value: 'fridge', label: 'Inside Fridge Cleaning' },
+      { value: 'oven', label: 'Inside Oven Cleaning' },
+      { value: 'windows', label: 'Inside Windows Cleaning' }
+    ],
+    conditional: {
+      field: 'propertyType',
+      value: ['house', 'apartment']
+    }
+  },
+  {
+    id: 'commercialAreas',
+    title: 'Which areas need cleaning?',
+    description: 'Select the number of each area that needs cleaning',
+    type: 'counter',
+    options: [
+      { value: 'offices', label: 'Offices/Cubicles' },
+      { value: 'meetingRooms', label: 'Meeting Rooms' },
+      { value: 'breakRoom', label: 'Break Room/Kitchen' },
+      { value: 'reception', label: 'Reception Area' },
+      { value: 'storage', label: 'Storage/Stockroom' },
+      { value: 'bathrooms', label: 'Bathrooms' }
+    ],
+    validation: { required: true },
+    conditional: {
+      field: 'propertyType',
+      value: ['office', 'retail']
+    }
+  },
+  {
+    id: 'otherAreas',
+    title: 'General Areas',
+    description: 'Select all areas that need cleaning',
+    type: 'multiselect',
+    options: [
+      { value: 'floors', label: 'Floors' },
+      { value: 'windows', label: 'Windows' },
+      { value: 'walls', label: 'Walls' },
+      { value: 'ceilings', label: 'Ceilings' },
+      { value: 'furniture', label: 'Furniture/Fixtures' }
+    ],
+    validation: { required: true },
+    conditional: {
+      field: 'propertyType',
+      value: 'other'
+    }
+  },
+  {
+    id: 'customAreaName',
+    title: 'Custom Room/Area Name',
+    description: 'Describe the area that needs cleaning',
+    type: 'text',
+    validation: { required: true },
+    conditional: {
+      field: 'propertyType',
+      value: 'other'
+    }
   },
   {
     id: 'frequency',
@@ -110,6 +163,7 @@ export const questions: Question[] = [
     title: 'Please provide details about your pets',
     description: 'This helps us prepare appropriately for the cleaning',
     type: 'text',
+    validation: { required: true },
     conditional: {
       field: 'hasPets',
       value: true
