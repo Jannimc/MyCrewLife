@@ -5,11 +5,10 @@ import { useAuth } from '../../hooks/useAuth';
 import { Logo } from '../common/Logo';
 
 interface HeaderProps {
-  showBackButton?: boolean;
   onGetQuote?: () => void;
 }
 
-export function Header({ showBackButton = false, onGetQuote }: HeaderProps) {
+export function Header({ onGetQuote }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
@@ -131,18 +130,10 @@ export function Header({ showBackButton = false, onGetQuote }: HeaderProps) {
   );
 
   return (
-    <header className="bg-white/95 backdrop-blur-sm sticky top-0 z-50 border-b">
+    <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <div className="flex items-center space-x-4">
-            {showBackButton && (
-              <button
-                onClick={() => navigate(-1)}
-                className="text-gray-600 hover:text-emerald-600 transition-colors duration-200"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-            )}
             <Logo />
           </div>
 

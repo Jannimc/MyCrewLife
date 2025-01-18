@@ -16,7 +16,7 @@ export function Hero({ postcode, setPostcode, onGetQuote }: HeroProps) {
   };
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-hidden pt-16">
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/90 via-white to-emerald-50/90" />
       <div className="absolute inset-0 bg-[radial-gradient(#10b981_0.5px,transparent_0.5px)] [background-size:16px_16px] opacity-[0.15]" />
       <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
