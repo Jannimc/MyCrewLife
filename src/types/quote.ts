@@ -1,6 +1,6 @@
 export interface QuoteFormData {
+  postcode: string;
   propertyType: string;
-  squareFootage: string;
   residentialAreas: Record<string, number>;
   commercialAreas: Record<string, number>;
   otherAreas: string[];
@@ -15,12 +15,18 @@ export interface QuoteFormData {
   accessInstructions: string;
 }
 
+export interface QuestionOption {
+  value: string;
+  label: string;
+  subOptions?: QuestionOption[];
+}
+
 export interface Question {
   id: string;
   title: string;
   description?: string;
   type: 'select' | 'number' | 'counter' | 'text' | 'radio' | 'time' | 'boolean' | 'multiselect';
-  options?: { value: string; label: string }[];
+  options?: QuestionOption[];
   validation?: {
     required?: boolean;
     min?: number;

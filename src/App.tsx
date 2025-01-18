@@ -1,17 +1,22 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Home } from './pages/Home';
-import { QuoteForm } from './components/QuoteForm';
+import { Quote } from './pages/Quote';
+import { Login } from './pages/Login';
+import { SignUp } from './pages/SignUp';
+import { AuthProvider } from './components/AuthProvider';
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/quote" element={<QuoteForm />} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/quote" element={<Quote />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
-
-export default App;
