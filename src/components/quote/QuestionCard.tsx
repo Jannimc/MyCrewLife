@@ -15,11 +15,11 @@ export function QuestionCard({
 }: QuestionCardProps) {
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-1">
+      <h2 className="text-xl font-bold text-gray-900 mb-1 text-center">
         {question.title}
       </h2>
       {question.description && (
-        <p className="text-gray-500 mb-4 text-sm">{question.description}</p>
+        <p className="text-gray-500 mb-6 text-sm text-center">{question.description}</p>
       )}
 
       <div>

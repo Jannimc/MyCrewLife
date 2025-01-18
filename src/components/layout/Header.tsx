@@ -17,14 +17,16 @@ export function Header({ showBackButton = false, onGetQuote }: HeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number>();
-
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         handleCloseDropdown();
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
       }
     }
 
@@ -65,6 +67,8 @@ export function Header({ showBackButton = false, onGetQuote }: HeaderProps) {
       console.error('Error signing out:', error);
     }
   };
+
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
 
   const renderUserDropdown = () => (
     <div 
@@ -145,17 +149,17 @@ export function Header({ showBackButton = false, onGetQuote }: HeaderProps) {
           <div className="hidden md:flex items-center space-x-6">
             {location.pathname === '/' && (
               <>
-                <a href="#how" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium">
-                  How it works
+                <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium">
+                  Home
                 </a>
-                <a href="#professionals" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium">
-                  Professionals
+                <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium">
+                  What We Offer
                 </a>
-                <a href="#services" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium">
-                  Services
+                <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium">
+                  Meet My Crew
                 </a>
-                <a href="#reviews" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium">
-                  Reviews
+                <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium">
+                  About Us
                 </a>
               </>
             )}
@@ -173,7 +177,15 @@ export function Header({ showBackButton = false, onGetQuote }: HeaderProps) {
           </div>
 
           {!isAuthPage && (
-            <div className="md:hidden">
+            <div className="md:hidden flex items-center space-x-3">
+              {onGetQuote && (
+                <button
+                  onClick={onGetQuote}
+                  className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity duration-200 text-sm font-medium"
+                >
+                  Get a quote
+                </button>
+              )}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="text-gray-600 hover:text-emerald-600 transition-colors duration-200"
@@ -185,63 +197,61 @@ export function Header({ showBackButton = false, onGetQuote }: HeaderProps) {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Popup */}
       {isMenuOpen && !isAuthPage && (
-        <div className="md:hidden bg-white border-b">
-          <div className="px-2 pt-2 pb-3 space-y-1">
+        <div
+          ref={mobileMenuRef}
+          className="absolute right-4 top-[4.5rem] w-64 bg-white rounded-xl shadow-lg border border-gray-100 animate-fade-in z-50 md:hidden"
+        >
+          <div className="p-4">
             {location.pathname === '/' && (
-              <>
-                <a href="#how" className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600">
-                  How it works
+              <div className="flex flex-col items-center space-y-2 mb-4">
+                <a href="#" className="w-full text-center px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600 hover:bg-gray-50 rounded-lg">
+                  Home
                 </a>
-                <a href="#professionals" className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600">
-                  Professionals
+                <a href="#" className="w-full text-center px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600 hover:bg-gray-50 rounded-lg">
+                  What We Offer
                 </a>
-                <a href="#services" className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600">
-                  Services
+                <a href="#" className="w-full text-center px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600 hover:bg-gray-50 rounded-lg">
+                  Meet My Crew
                 </a>
-                <a href="#reviews" className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600">
-                  Reviews
+                <a href="#" className="w-full text-center px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600 hover:bg-gray-50 rounded-lg">
+                  About Us
                 </a>
-              </>
+              </div>
             )}
             
             {user ? (
-              <div className="px-3 py-2 space-y-2 border-t border-gray-100">
-                <p className="text-sm text-gray-500">Signed in as</p>
-                <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
+              <div className="border-t border-gray-100 pt-4">
+                <div className="text-center mb-4">
+                  <p className="text-sm text-gray-500">Signed in as</p>
+                  <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
+                </div>
                 <button
                   onClick={handleSignOut}
-                  className="w-full flex items-center px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600"
+                  className="w-full flex items-center justify-center px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600 hover:bg-gray-50 rounded-lg"
                 >
                   <LogOut className="w-5 h-5 mr-2" />
                   Sign out
                 </button>
               </div>
             ) : (
-              <div className="px-3 py-2 space-y-2">
-                <button
-                  onClick={handleLogin}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2 rounded-lg font-medium"
-                >
-                  Log in
-                </button>
-                <div className="text-center py-2">
-                  <span className="text-gray-600">No Account? </span>
-                  <Link to="/signup" className="text-emerald-600 hover:text-emerald-700 font-medium">
-                    Start here
-                  </Link>
+              <div className="border-t border-gray-100 pt-4">
+                <div className="flex flex-col items-center space-y-3">
+                  <button
+                    onClick={handleLogin}
+                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2 rounded-lg font-medium text-center"
+                  >
+                    Log in
+                  </button>
+                  <div className="text-center">
+                    <span className="text-gray-600">No Account? </span>
+                    <Link to="/signup" className="text-emerald-600 hover:text-emerald-700 font-medium">
+                      Start here
+                    </Link>
+                  </div>
                 </div>
               </div>
-            )}
-
-            {onGetQuote && (
-              <button
-                onClick={onGetQuote}
-                className="block w-full px-3 py-2 text-base font-medium text-white bg-gradient-to-r from-emerald-600 to-teal-500 rounded-lg"
-              >
-                Get a quote
-              </button>
             )}
           </div>
         </div>

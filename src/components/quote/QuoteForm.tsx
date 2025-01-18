@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { questions } from '../../data/quoteQuestions';
 import { QuoteFormData } from '../../types/quote';
 import { ProgressBar } from './ProgressBar';
@@ -12,6 +12,8 @@ interface QuoteFormProps {
 export function QuoteForm({ initialFormData }: QuoteFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<QuoteFormData>(initialFormData);
+  const [postcodeValid, setPostcodeValid] = useState(false);
+  const progressBarRef = useRef<HTMLDivElement>(null);
 
   const filteredQuestions = questions.filter(question => {
     if (!question.conditional) return true;
@@ -32,6 +34,36 @@ export function QuoteForm({ initialFormData }: QuoteFormProps) {
       ...prev,
       [currentQuestion.id]: value
     }));
+
+    // Reset postcode validation when postcode changes
+    if (currentQuestion.id === 'postcode') {
+      setPostcodeValid(false);
+      validatePostcode(value);
+    }
+  };
+
+  const validatePostcode = async (postcode: string) => {
+    try {
+      const response = await fetch(`https://api.postcodes.io/postcodes/${postcode}/validate`);
+      const data = await response.json();
+      setPostcodeValid(data.result);
+    } catch (err) {
+      setPostcodeValid(false);
+    }
+  };
+
+  const scrollToProgress = () => {
+    if (progressBarRef.current) {
+      const header = document.querySelector('header');
+      const headerHeight = header?.offsetHeight || 0;
+      const yOffset = -headerHeight - 24; // Add extra padding
+      const y = progressBarRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      
+      window.scrollTo({
+        top: y,
+        behavior: 'smooth'
+      });
+    }
   };
 
   const handleNext = () => {
@@ -39,17 +71,20 @@ export function QuoteForm({ initialFormData }: QuoteFormProps) {
       handleSubmit();
     } else {
       setCurrentStep(prev => prev + 1);
+      // Scroll to progress bar after state update
+      setTimeout(scrollToProgress, 100);
     }
   };
 
   const handleBack = () => {
     if (!isFirstStep) {
       setCurrentStep(prev => prev - 1);
+      // Scroll to progress bar after state update
+      setTimeout(scrollToProgress, 100);
     }
   };
 
   const handleSubmit = () => {
-    // TODO: Implement form submission
     console.log('Form submitted:', formData);
   };
 
@@ -57,6 +92,11 @@ export function QuoteForm({ initialFormData }: QuoteFormProps) {
     const value = formData[currentQuestion.id as keyof QuoteFormData];
     
     if (currentQuestion.validation?.required) {
+      // Special handling for postcode validation
+      if (currentQuestion.id === 'postcode') {
+        return postcodeValid;
+      }
+
       // Special handling for property type with custom option
       if (currentQuestion.id === 'propertyType' && value?.startsWith('custom:')) {
         return value.length > 7; // 'custom:' is 7 characters, so we need more than that
@@ -78,7 +118,9 @@ export function QuoteForm({ initialFormData }: QuoteFormProps) {
 
   return (
     <>
-      <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
+      <div ref={progressBarRef} className="mb-8">
+        <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
+      </div>
       <QuestionCard
         question={currentQuestion}
         value={formData[currentQuestion.id as keyof QuoteFormData]}
