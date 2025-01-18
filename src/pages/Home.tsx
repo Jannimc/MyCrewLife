@@ -7,6 +7,7 @@ import { Services } from '../components/Services';
 import { Reviews } from '../components/Reviews';
 import { FAQ } from '../components/FAQ';
 import { Footer } from '../components/Footer';
+import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 export function Home() {
   const [postcode, setPostcode] = useState('');
@@ -14,6 +15,9 @@ export function Home() {
   const [activeService, setActiveService] = useState(null);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const navigate = useNavigate();
+
+  // Initialize scroll animations
+  useScrollAnimation();
 
   const handleGetQuote = () => {
     navigate('/quote');
@@ -23,11 +27,21 @@ export function Home() {
     <div className="min-h-screen bg-white">
       <Navigation isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} onGetQuote={handleGetQuote} />
       <Hero postcode={postcode} setPostcode={setPostcode} onGetQuote={handleGetQuote} />
-      <PartnerLogos />
-      <Services activeService={activeService} setActiveService={setActiveService} />
-      <Reviews />
-      <FAQ activeFaq={activeFaq} setActiveFaq={setActiveFaq} />
-      <Footer />
+      <div className="scroll-fade-in">
+        <PartnerLogos />
+      </div>
+      <div className="scroll-fade-in">
+        <Services activeService={activeService} setActiveService={setActiveService} />
+      </div>
+      <div className="scroll-fade-in">
+        <Reviews />
+      </div>
+      <div className="scroll-fade-in">
+        <FAQ activeFaq={activeFaq} setActiveFaq={setActiveFaq} />
+      </div>
+      <div className="scroll-fade-in">
+        <Footer />
+      </div>
     </div>
   );
 }
