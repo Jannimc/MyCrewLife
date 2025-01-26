@@ -1,5 +1,5 @@
-import React from 'react';
-import { Search, Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Star, AlertCircle } from 'lucide-react';
 
 interface HeroProps {
   postcode: string;
@@ -8,11 +8,46 @@ interface HeroProps {
 }
 
 export function Hero({ postcode, setPostcode, onGetQuote }: HeroProps) {
+  const [isValidating, setIsValidating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // UK postcode regex pattern
+  const postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/i;
+
+  const validatePostcode = async (postcode: string) => {
+    setIsValidating(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`https://api.postcodes.io/postcodes/${postcode}/validate`);
+      const data = await response.json();
+      
+      if (data.result) {
+        onGetQuote();
+      } else {
+        setError('Please enter a valid UK postcode');
+      }
+    } catch (err) {
+      setError('Unable to verify postcode. Please try again.');
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (postcode) {
-      onGetQuote();
+    
+    // Reset error state
+    setError(null);
+
+    // Basic format validation
+    if (!postcodeRegex.test(postcode)) {
+      setError('Please enter a valid UK postcode format');
+      return;
     }
+
+    // Validate against postcodes.io API
+    validatePostcode(postcode);
   };
 
   return (
@@ -63,19 +98,38 @@ export function Hero({ postcode, setPostcode, onGetQuote }: HeroProps) {
                       <input
                         type="text"
                         value={postcode}
-                        onChange={(e) => setPostcode(e.target.value)}
-                        className="block w-full pl-11 pr-4 py-4 border border-gray-200 rounded-lg sm:rounded-r-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white shadow-sm text-gray-900"
+                        onChange={(e) => {
+                          setPostcode(e.target.value.toUpperCase());
+                          setError(null);
+                        }}
+                        className={`block w-full pl-11 pr-4 py-4 border border-gray-200 rounded-lg sm:rounded-r-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white shadow-sm text-gray-900 ${
+                          error ? 'border-red-300' : ''
+                        }`}
                         placeholder="Enter your postcode"
+                        maxLength={8}
                       />
                     </div>
                     <button 
                       type="submit"
-                      className="w-full sm:w-auto px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-lg sm:rounded-l-none hover:opacity-90 transition-opacity duration-200 font-medium shadow-lg hover:shadow-emerald-500/25"
+                      disabled={isValidating || !postcode}
+                      className="w-full sm:w-auto px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-lg sm:rounded-l-none hover:opacity-90 transition-opacity duration-200 font-medium shadow-lg hover:shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Find your cleaner
+                      {isValidating ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                        </div>
+                      ) : (
+                        'Find your cleaner'
+                      )}
                     </button>
                   </div>
                 </div>
+                {error && (
+                  <div className="mt-2 flex items-center justify-center text-red-600 text-sm">
+                    <AlertCircle className="w-4 h-4 mr-1" />
+                    {error}
+                  </div>
+                )}
               </form>
             </div>
           </main>

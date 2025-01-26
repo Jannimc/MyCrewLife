@@ -52,7 +52,7 @@ export function SignUp() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <button
           onClick={() => navigate(-1)}
-          className="mt-4 mb-8 flex items-center text-gray-600 hover:text-emerald-600 transition-colors duration-200"
+          className="mt-8 flex items-center text-gray-600 hover:text-emerald-600 transition-colors duration-200"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
           <span>Back</span>

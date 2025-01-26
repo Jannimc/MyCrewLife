@@ -18,7 +18,7 @@ export function Home() {
   useScrollAnimation();
 
   const handleGetQuote = () => {
-    navigate('/quote');
+    navigate('/quote', { state: { postcode } });
   };
 
   return (

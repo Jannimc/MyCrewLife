@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plus, Minus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { faqs } from '../data/faqs';
 
 interface FAQProps {
@@ -8,6 +9,8 @@ interface FAQProps {
 }
 
 export function FAQ({ activeFaq, setActiveFaq }: FAQProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="relative bg-gradient-to-b from-white via-emerald-100 to-white py-16 sm:py-24" id="faq">
       {/* Decorative background */}
@@ -51,7 +54,10 @@ export function FAQ({ activeFaq, setActiveFaq }: FAQProps) {
         {/* Call to Action */}
         <div className="mt-12 text-center">
           <p className="text-gray-600 mb-4">Still have questions?</p>
-          <button className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-emerald-600 to-teal-500 hover:opacity-90 transition-opacity duration-200 shadow-lg hover:shadow-emerald-500/25">
+          <button 
+            onClick={() => navigate('/support')}
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-emerald-600 to-teal-500 hover:opacity-90 transition-opacity duration-200 shadow-lg hover:shadow-emerald-500/25"
+          >
             Contact Support
           </button>
         </div>

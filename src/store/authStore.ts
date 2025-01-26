@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { User } from '@supabase/supabase-js';
+import { User, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
 interface AuthState {
@@ -23,7 +23,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       password,
     });
     
-    if (error) throw error;
+    if (error) {
+      const authError = error as AuthError;
+      if (authError.message === 'Invalid login credentials') {
+        throw new Error('The email or password you entered is incorrect');
+      }
+      throw error;
+    }
   },
 
   signInWithGoogle: async () => {

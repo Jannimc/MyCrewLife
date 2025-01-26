@@ -15,23 +15,32 @@ export function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
+    }
+
     setError('');
     setIsLoading(true);
 
     try {
       await signIn(email, password);
-    } catch (err) {
-      setError('Invalid email or password');
+    } catch (err: any) {
+      // Handle the error message from the auth store
+      setError(err.message || 'An error occurred while signing in. Please try again.');
+      console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
+    setError('');
     try {
       await signInWithGoogle();
-    } catch (err) {
-      setError('Failed to sign in with Google');
+    } catch (err: any) {
+      setError('Unable to sign in with Google. Please try again.');
+      console.error('Google sign in error:', err);
     }
   };
 
@@ -40,7 +49,7 @@ export function Login() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <button
           onClick={() => navigate(-1)}
-          className="mt-4 mb-8 flex items-center text-gray-600 hover:text-emerald-600 transition-colors duration-200"
+          className="mt-8 flex items-center text-gray-600 hover:text-emerald-600 transition-colors duration-200"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
           <span>Back</span>

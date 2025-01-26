@@ -1,32 +1,34 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Home } from './pages/Home';
 import { Quote } from './pages/Quote';
 import { Login } from './pages/Login';
 import { SignUp } from './pages/SignUp';
+import { Profile } from './pages/Profile';
+import { PaymentMethods } from './pages/PaymentMethods';
+import { Bookings } from './pages/Bookings';
+import { Support } from './pages/Support';
+import { Dashboard } from './pages/Dashboard';
+import { WhatWeOffer } from './pages/WhatWeOffer';
+import { MeetMyCrew } from './pages/MeetMyCrew';
 import { AuthProvider } from './components/AuthProvider';
-
-// Scroll to top component
-function ScrollToTop() {
-  const location = useLocation();
-  
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
-
-  return null;
-}
 
 export default function App() {
   return (
     <AuthProvider>
       <Router>
-        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/what-we-offer" element={<WhatWeOffer />} />
+          <Route path="/meet-my-crew" element={<MeetMyCrew />} />
           <Route path="/quote" element={<Quote />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/payment-methods" element={<PaymentMethods />} />
+          <Route path="/bookings" element={<Bookings />} />
+          <Route path="/support" element={<Support />} />
         </Routes>
       </Router>
     </AuthProvider>
