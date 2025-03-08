@@ -2,12 +2,18 @@ import React from 'react';
 import { MainLayout } from '../components/layout/MainLayout';
 import { Home, Sparkles, Brush, Key, Box, Building, SprayCan, Hammer, Store, CheckCircle2, Star } from 'lucide-react';
 import { services } from '../data/services';
+import { useNavigate } from 'react-router-dom';
 
 export function WhatWeOffer() {
+  const navigate = useNavigate();
   const allServices = [...services.home, ...services.moving, ...services.commercial];
 
+  const handleGetQuote = () => {
+    navigate('/quote');
+  };
+
   return (
-    <MainLayout>
+    <MainLayout onGetQuote={handleGetQuote}>
       <div className="min-h-screen bg-gray-50 pt-20">
         {/* Hero Section */}
         <div className="relative bg-gradient-to-b from-emerald-50 via-white to-white py-16">
@@ -119,7 +125,7 @@ export function WhatWeOffer() {
                 <div className="mt-8 lg:mt-0 lg:ml-8">
                   <div className="inline-flex rounded-lg shadow">
                     <button
-                      onClick={() => window.location.href = '/quote'}
+                      onClick={handleGetQuote}
                       className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-emerald-600 bg-white hover:bg-emerald-50 transition-colors duration-200"
                     >
                       Get a Quote

@@ -1,41 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, MapPin, User, AlertCircle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { MainLayout } from '../components/layout/MainLayout';
 import { BookingsList } from '../components/bookings/BookingsList';
 import { EmptyState } from '../components/bookings/EmptyState';
-
-// Mock data - replace with actual data from your backend
-const mockBookings = [
-  {
-    id: '1',
-    date: '2024-03-15',
-    time: '09:00 AM',
-    address: '123 Main St, London SW1A 1AA',
-    cleaner: 'Sarah Johnson',
-    status: 'upcoming',
-    service: 'Regular Cleaning',
-    duration: '3 hours'
-  },
-  {
-    id: '2',
-    date: '2024-03-10',
-    time: '02:00 PM',
-    address: '456 Park Ave, London E1 6AN',
-    cleaner: 'Michael Brown',
-    status: 'completed',
-    service: 'Deep Cleaning',
-    duration: '5 hours',
-    rating: 5
-  }
-];
+import { useUserData } from '../hooks/useUserData';
 
 export function Bookings() {
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
   const navigate = useNavigate();
-
-  const upcomingBookings = mockBookings.filter(booking => booking.status === 'upcoming');
-  const pastBookings = mockBookings.filter(booking => booking.status === 'completed');
+  const { upcomingBookings, pastBookings, loading } = useUserData();
 
   return (
     <MainLayout>
@@ -75,7 +49,7 @@ export function Bookings() {
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  Upcoming ({upcomingBookings.length})
+                  Upcoming ({loading ? '...' : upcomingBookings.length})
                 </button>
                 <button
                   onClick={() => setActiveTab('past')}
@@ -85,23 +59,56 @@ export function Bookings() {
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  Past Bookings ({pastBookings.length})
+                  Past Bookings ({loading ? '...' : pastBookings.length})
                 </button>
               </div>
             </div>
 
+            {/* Loading State */}
+            {loading && (
+              <div className="space-y-4">
+                {[...Array(2)].map((_, index) => (
+                  <div key={index} className="bg-white rounded-2xl shadow-sm p-6 animate-pulse">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center">
+                        <div className="h-5 bg-gray-200 rounded w-32"></div>
+                        <div className="mx-2 h-4 bg-gray-200 rounded w-4"></div>
+                        <div className="h-5 bg-gray-200 rounded w-16"></div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-3">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="h-4 bg-gray-200 rounded w-full"></div>
+                        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                      </div>
+                    </div>
+                    <div className="mt-6 flex justify-end space-x-3">
+                      <div className="h-10 bg-gray-200 rounded w-24"></div>
+                      <div className="h-10 bg-gray-200 rounded w-24"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Bookings List or Empty State */}
-            {activeTab === 'upcoming' ? (
-              upcomingBookings.length > 0 ? (
-                <BookingsList bookings={upcomingBookings} type="upcoming" />
+            {!loading && (
+              activeTab === 'upcoming' ? (
+                upcomingBookings.length > 0 ? (
+                  <BookingsList bookings={upcomingBookings} type="upcoming" />
+                ) : (
+                  <EmptyState />
+                )
               ) : (
-                <EmptyState />
-              )
-            ) : (
-              pastBookings.length > 0 ? (
-                <BookingsList bookings={pastBookings} type="past" />
-              ) : (
-                <EmptyState type="past" />
+                pastBookings.length > 0 ? (
+                  <BookingsList bookings={pastBookings} type="past" />
+                ) : (
+                  <EmptyState type="past" />
+                )
               )
             )}
           </div>

@@ -11,6 +11,8 @@ import { Support } from './pages/Support';
 import { Dashboard } from './pages/Dashboard';
 import { WhatWeOffer } from './pages/WhatWeOffer';
 import { MeetMyCrew } from './pages/MeetMyCrew';
+import { BookingConfirmation } from './pages/BookingConfirmation';
+import { AboutUs } from './pages/AboutUs';
 import { AuthProvider } from './components/AuthProvider';
 
 export default function App() {
@@ -21,7 +23,9 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/what-we-offer" element={<WhatWeOffer />} />
           <Route path="/meet-my-crew" element={<MeetMyCrew />} />
+          <Route path="/about-us" element={<AboutUs />} />
           <Route path="/quote" element={<Quote />} />
+          <Route path="/booking-confirmation" element={<BookingConfirmation />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/dashboard" element={<Dashboard />} />

@@ -1,58 +1,68 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { questions } from '../../data/quoteQuestions';
 import { QuoteFormData } from '../../types/quote';
 import { ProgressBar } from './ProgressBar';
 import { QuestionCard } from './QuestionCard';
 import { NavigationButtons } from './NavigationButtons';
+import { QuoteSummary } from './QuoteSummary';
 import { AlertCircle } from 'lucide-react';
 
 interface QuoteFormProps {
   initialFormData: QuoteFormData;
   onUpdate: (formData: QuoteFormData) => void;
+  initialShowSummary?: boolean;
 }
 
-export function QuoteForm({ initialFormData, onUpdate }: QuoteFormProps) {
+/**
+ * Multi-step quote form component
+ */
+export function QuoteForm({ 
+  initialFormData, 
+  onUpdate, 
+  initialShowSummary = false 
+}: QuoteFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<QuoteFormData>(initialFormData);
   const [postcodeValid, setPostcodeValid] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSummary, setShowSummary] = useState(initialShowSummary);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
+  const navigate = useNavigate();
 
+  // Validate postcode on initial mount if provided
   useEffect(() => {
-    // Only run on mount if there's an initial postcode
     if (isInitialMount.current && initialFormData.postcode) {
       validatePostcode(initialFormData.postcode);
       isInitialMount.current = false;
     }
   }, [initialFormData.postcode]);
 
+  // Update parent component with form data changes
   useEffect(() => {
-    // Update parent component with form data changes
     onUpdate(formData);
   }, [formData, onUpdate]);
 
+  // Set showSummary based on prop
+  useEffect(() => {
+    setShowSummary(initialShowSummary);
+  }, [initialShowSummary]);
+
+  /**
+   * Validate UK postcode using postcodes.io API
+   */
   const validatePostcode = async (postcode: string) => {
     setIsValidating(true);
     try {
-      const response = await fetch(`https://api.postcodes.io/postcodes/${postcode}`);
+      const response = await fetch(`https://api.postcodes.io/postcodes/${postcode}/validate`);
       const data = await response.json();
       
-      if (data.status === 200) {
-        // Check if the postcode is in London
-        const isLondon = data.result.region === "London" || 
-                        data.result.admin_district?.includes("London") ||
-                        data.result.nhs_ha?.includes("London");
-        
-        if (isLondon) {
-          setPostcodeValid(true);
-          setError(null);
-          setCurrentStep(prev => prev + 1);
-        } else {
-          setPostcodeValid(false);
-          setError("Sorry, we currently only operate in London. We're expanding to other areas soon!");
-        }
+      if (data.result) {
+        setPostcodeValid(true);
+        setError(null);
+        setCurrentStep(prev => prev + 1);
       } else {
         setPostcodeValid(false);
         setError('Please enter a valid UK postcode');
@@ -65,6 +75,7 @@ export function QuoteForm({ initialFormData, onUpdate }: QuoteFormProps) {
     }
   };
 
+  // Filter questions based on conditional logic
   const filteredQuestions = questions.filter(question => {
     if (!question.conditional) return true;
     const { field, value } = question.conditional;
@@ -79,6 +90,9 @@ export function QuoteForm({ initialFormData, onUpdate }: QuoteFormProps) {
   const isLastStep = currentStep === totalSteps - 1;
   const isFirstStep = currentStep === 0;
 
+  /**
+   * Handle input change for the current question
+   */
   const handleInputChange = (value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -91,6 +105,9 @@ export function QuoteForm({ initialFormData, onUpdate }: QuoteFormProps) {
     }
   };
 
+  /**
+   * Scroll to progress bar after navigation
+   */
   const scrollToProgress = () => {
     if (progressBarRef.current) {
       const header = document.querySelector('header');
@@ -105,6 +122,9 @@ export function QuoteForm({ initialFormData, onUpdate }: QuoteFormProps) {
     }
   };
 
+  /**
+   * Handle next button click
+   */
   const handleNext = async () => {
     // For postcode question, validate before proceeding
     if (currentQuestion.id === 'postcode') {
@@ -113,7 +133,7 @@ export function QuoteForm({ initialFormData, onUpdate }: QuoteFormProps) {
     }
 
     if (isLastStep) {
-      handleSubmit();
+      setShowSummary(true);
     } else {
       setCurrentStep(prev => prev + 1);
       // Scroll to progress bar after state update
@@ -121,7 +141,15 @@ export function QuoteForm({ initialFormData, onUpdate }: QuoteFormProps) {
     }
   };
 
+  /**
+   * Handle back button click
+   */
   const handleBack = () => {
+    if (showSummary) {
+      setShowSummary(false);
+      return;
+    }
+    
     if (!isFirstStep) {
       setCurrentStep(prev => prev - 1);
       // Scroll to progress bar after state update
@@ -129,10 +157,55 @@ export function QuoteForm({ initialFormData, onUpdate }: QuoteFormProps) {
     }
   };
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
+  /**
+   * Handle edit question from summary
+   */
+  const handleEditQuestion = (questionId: string) => {
+    // Find the index of the question to edit
+    const questionIndex = filteredQuestions.findIndex(q => q.id === questionId);
+    if (questionIndex !== -1) {
+      setCurrentStep(questionIndex);
+      setShowSummary(false);
+      // Scroll to progress bar after state update
+      setTimeout(scrollToProgress, 100);
+    }
   };
 
+  /**
+   * Navigate directly to booking confirmation page
+   */
+  const handleContinueToCheckout = () => {
+    // Generate a random cleaner ID (1, 2, or 3)
+    const randomCleanerId = Math.floor(Math.random() * 3) + 1;
+    
+    // Generate a random time slot based on preferred time
+    let timeSlot = '';
+    switch(formData.preferredTime) {
+      case 'morning':
+        timeSlot = ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM'][Math.floor(Math.random() * 4)];
+        break;
+      case 'afternoon':
+        timeSlot = ['12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM'][Math.floor(Math.random() * 4)];
+        break;
+      case 'evening':
+        timeSlot = ['4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM'][Math.floor(Math.random() * 4)];
+        break;
+      default:
+        timeSlot = ['9:00 AM', '1:00 PM', '5:00 PM'][Math.floor(Math.random() * 3)];
+    }
+    
+    navigate('/booking-confirmation', {
+      state: {
+        quoteData: formData,
+        cleanerId: String(randomCleanerId),
+        timeSlot
+      }
+    });
+  };
+
+  /**
+   * Check if current question is answered
+   */
   const isAnswered = () => {
     const value = formData[currentQuestion.id as keyof QuoteFormData];
     
@@ -161,6 +234,31 @@ export function QuoteForm({ initialFormData, onUpdate }: QuoteFormProps) {
     return true;
   };
 
+  // Render summary view if showSummary is true
+  if (showSummary) {
+    return (
+      <>
+        <div ref={progressBarRef}>
+          <ProgressBar currentStep={totalSteps} totalSteps={totalSteps} />
+        </div>
+        <QuoteSummary 
+          formData={formData} 
+          onEdit={handleEditQuestion} 
+          onContinue={handleContinueToCheckout} 
+        />
+        <div className="mt-4">
+          <button
+            onClick={handleBack}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+          >
+            Back to Questions
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  // Render question form
   return (
     <>
       <div ref={progressBarRef} className="mb-8">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { MainLayout } from '../components/layout/MainLayout';
@@ -8,12 +8,21 @@ import { CostSummary } from '../components/quote/CostSummary';
 import { QuickFAQs } from '../components/quote/QuickFAQs';
 import { QuoteFormData } from '../types/quote';
 
+/**
+ * Quote page component
+ * Handles the quote form and related components
+ */
 export function Quote() {
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get data from location state
   const postcode = location.state?.postcode || '';
+  const initialShowSummary = location.state?.showSummary || false;
+  const stateQuoteData = location.state?.quoteData;
 
-  const initialFormData: QuoteFormData = {
+  // Default form data
+  const defaultFormData: QuoteFormData = {
     postcode,
     propertyType: '',
     residentialAreas: {},
@@ -31,8 +40,18 @@ export function Quote() {
     services: []
   };
 
-  const [formData, setFormData] = React.useState<QuoteFormData>(initialFormData);
+  // State for form data and summary view
+  const [formData, setFormData] = useState<QuoteFormData>(stateQuoteData || defaultFormData);
+  const [showSummary, setShowSummary] = useState(initialShowSummary);
 
+  // Set showSummary based on location state
+  useEffect(() => {
+    if (initialShowSummary) {
+      setShowSummary(true);
+    }
+  }, [initialShowSummary]);
+
+  // Update form data from child component
   const handleFormUpdate = (newData: QuoteFormData) => {
     setFormData(newData);
   };
@@ -40,6 +59,7 @@ export function Quote() {
   return (
     <MainLayout>
       <div className="relative">
+        {/* Back button */}
         <div className="absolute top-6 left-0 right-0 z-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <button
@@ -52,16 +72,22 @@ export function Quote() {
           </div>
         </div>
 
+        {/* Quote header */}
         <QuoteHeader />
         
+        {/* Main content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Quote form */}
             <div className="lg:col-span-2">
               <QuoteForm 
-                initialFormData={initialFormData} 
+                initialFormData={formData} 
                 onUpdate={handleFormUpdate}
+                initialShowSummary={showSummary}
               />
             </div>
+            
+            {/* Sidebar */}
             <div className="lg:col-span-1">
               <div className="space-y-6">
                 <div className="sticky top-24">

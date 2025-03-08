@@ -8,6 +8,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
 }
 
+/**
+ * Reusable button component with different variants and loading state
+ */
 export function Button({
   variant = 'primary',
   isLoading = false,

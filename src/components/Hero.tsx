@@ -1,5 +1,28 @@
 import React, { useState } from 'react';
-import { Search, Star, AlertCircle } from 'lucide-react';
+import { Search, Star, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const slides = [
+  {
+    image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Professional Home Cleaning",
+    subtitle: "Experience the difference of a truly clean home"
+  },
+  {
+    image: "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Trusted & Reliable Service",
+    subtitle: "Our experienced cleaners take pride in their work"
+  },
+  {
+    image: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Eco-Friendly Cleaning",
+    subtitle: "Safe for your family and the environment"
+  },
+  {
+    image: "https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Attention to Detail",
+    subtitle: "Every corner gets the attention it deserves"
+  }
+];
 
 interface HeroProps {
   postcode: string;
@@ -10,9 +33,33 @@ interface HeroProps {
 export function Hero({ postcode, setPostcode, onGetQuote }: HeroProps) {
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // UK postcode regex pattern
   const postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/i;
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      handleNextSlide();
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [currentSlide]);
+
+  const handlePrevSlide = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const handleNextSlide = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
 
   const validatePostcode = async (postcode: string) => {
     setIsValidating(true);
@@ -51,39 +98,79 @@ export function Hero({ postcode, setPostcode, onGetQuote }: HeroProps) {
   };
 
   return (
-    <div className="relative overflow-hidden pt-16">
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/90 via-white to-emerald-50/90" />
-      <div className="absolute inset-0 bg-[radial-gradient(#10b981_0.5px,transparent_0.5px)] [background-size:16px_16px] opacity-[0.15]" />
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-100 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
+    <div className="relative overflow-hidden min-h-[calc(100vh-4rem)]">
+      {/* Slideshow */}
+      <div className="absolute inset-0 z-0">
+        {slides.map((slide, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              currentSlide === index ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <div className="absolute inset-0 bg-black/40 z-10" />
+            <img
+              src={slide.image}
+              alt={slide.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Navigation Buttons */}
+      <button
+        onClick={handlePrevSlide}
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors duration-200"
+      >
+        <ChevronLeft className="w-6 h-6" />
+      </button>
+      <button
+        onClick={handleNextSlide}
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors duration-200"
+      >
+        <ChevronRight className="w-6 h-6" />
+      </button>
+
+      {/* Slide Indicators */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
+        {slides.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentSlide(index)}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              currentSlide === index
+                ? 'bg-white w-8'
+                : 'bg-white/50 hover:bg-white/75'
+            }`}
+          />
+        ))}
+      </div>
       
-      <div className="max-w-7xl mx-auto relative">
-        <div className="relative z-10 pb-8 sm:pb-16 md:pb-20 lg:pb-28 xl:pb-32">
-          <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 lg:mt-16 lg:px-8 xl:mt-20">
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="relative pb-8 sm:pb-16 md:pb-20 lg:pb-28 xl:pb-32">
+          <main className="mt-32 mx-auto max-w-7xl px-4 sm:mt-40 sm:px-6 lg:mt-48 lg:px-8">
             <div className="text-center">
               {/* Trustpilot-style Rating */}
-              <div className="inline-flex items-center justify-center space-x-2 mb-6 bg-white/90 backdrop-blur-sm px-4 py-2 sm:px-6 sm:py-3 rounded-full shadow-md hover:shadow-lg transition-shadow duration-300">
+              <div className="inline-flex items-center justify-center space-x-2 mb-6 bg-white/10 backdrop-blur-sm px-4 py-2 sm:px-6 sm:py-3 rounded-full shadow-md hover:shadow-lg transition-shadow duration-300">
                 <span className="text-sm sm:text-base text-gray-600 font-medium">Excellent</span>
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 fill-current" />
                   ))}
                 </div>
-                <span className="text-sm sm:text-base text-gray-600 font-medium">on Trustpilot</span>
+                <span className="text-sm sm:text-base text-white font-medium">on Trustpilot</span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight font-extrabold text-gray-900 mb-4 sm:mb-6">
-                <span className="block bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                  Brilliant local cleaners
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight font-extrabold text-white mb-4 sm:mb-6">
+                <span className="block">
+                  {slides[currentSlide].title}
                 </span>
               </h1>
-              <p className="mt-3 max-w-md mx-auto text-lg sm:text-xl md:text-2xl text-gray-500 md:mt-5 md:max-w-3xl font-light">
-                5★ service. Vetted cleaners.
-                <br className="hidden sm:block" />
-                All managed online.
+              <p className="mt-3 max-w-md mx-auto text-lg sm:text-xl md:text-2xl text-gray-100 md:mt-5 md:max-w-3xl font-light">
+                {slides[currentSlide].subtitle}
                 <br />
-                <span className="font-medium text-gray-700">This is housework that works.</span>
+                <span className="font-medium text-white">This is housework that works.</span>
               </p>
 
               {/* Search Bar */}

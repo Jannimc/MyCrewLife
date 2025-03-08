@@ -1,21 +1,22 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export function Footer() {
   const sections = [
     {
       title: "Company",
       links: [
-        { name: "About", href: "#about" },
+        { name: "About Us", href: "/about-us" },
         { name: "Careers", href: "#careers" },
-        { name: "Contact", href: "#contact" }
+        { name: "Contact", href: "/support" }
       ]
     },
     {
       title: "Services",
       links: [
-        { name: "Regular cleaning", href: "#regular" },
-        { name: "Deep cleaning", href: "#deep" },
-        { name: "End of tenancy", href: "#end" }
+        { name: "Regular cleaning", href: "/what-we-offer" },
+        { name: "Deep cleaning", href: "/what-we-offer" },
+        { name: "End of tenancy", href: "/what-we-offer" }
       ]
     },
     {
@@ -47,12 +48,21 @@ export function Footer() {
               <ul className="space-y-3">
                 {section.links.map((link, linkIndex) => (
                   <li key={linkIndex}>
-                    <a
-                      href={link.href}
-                      className="text-sm sm:text-base text-gray-500 hover:text-emerald-600 transition-colors duration-200"
-                    >
-                      {link.name}
-                    </a>
+                    {link.href.startsWith('/') ? (
+                      <Link
+                        to={link.href}
+                        className="text-sm sm:text-base text-gray-500 hover:text-emerald-600 transition-colors duration-200"
+                      >
+                        {link.name}
+                      </Link>
+                    ) : (
+                      <a
+                        href={link.href}
+                        className="text-sm sm:text-base text-gray-500 hover:text-emerald-600 transition-colors duration-200"
+                      >
+                        {link.name}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>

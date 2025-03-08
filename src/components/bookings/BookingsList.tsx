@@ -1,17 +1,6 @@
 import React from 'react';
 import { Calendar, Clock, MapPin, User, Star, AlertCircle } from 'lucide-react';
-
-interface Booking {
-  id: string;
-  date: string;
-  time: string;
-  address: string;
-  cleaner: string;
-  status: string;
-  service: string;
-  duration: string;
-  rating?: number;
-}
+import { Booking } from '../../hooks/useUserData';
 
 interface BookingsListProps {
   bookings: Booking[];
@@ -40,7 +29,7 @@ export function BookingsList({ bookings, type }: BookingsListProps) {
             {/* Service Type & Duration */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
-                <span className="text-base font-semibold text-gray-900">{booking.service}</span>
+                <span className="text-base font-semibold text-gray-900">{booking.service_type}</span>
                 <span className="mx-2 text-gray-300">•</span>
                 <span className="text-sm text-gray-500">{booking.duration}</span>
               </div>

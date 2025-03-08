@@ -18,6 +18,9 @@ interface AuthFormProps {
   onGoogleClick: () => void;
 }
 
+/**
+ * Reusable authentication form for login and signup
+ */
 export function AuthForm({
   type,
   onSubmit,

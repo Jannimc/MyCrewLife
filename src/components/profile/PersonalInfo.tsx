@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
 import { User as UserIcon, Mail, Phone, Pencil, Check, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useUserData } from '../../hooks/useUserData';
 
 interface PersonalInfoProps {
   user: User;
@@ -10,13 +11,24 @@ interface PersonalInfoProps {
 }
 
 export function PersonalInfo({ user, isEditing, setIsEditing }: PersonalInfoProps) {
+  const { profile, loading } = useUserData();
   const [formData, setFormData] = useState({
-    fullName: user.user_metadata?.full_name || '',
-    email: user.email || '',
-    phone: user.user_metadata?.phone || ''
+    fullName: '',
+    email: '',
+    phone: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        fullName: profile.full_name || '',
+        email: user.email || '',
+        phone: profile.phone || ''
+      });
+    }
+  }, [profile, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,22 +36,57 @@ export function PersonalInfo({ user, isEditing, setIsEditing }: PersonalInfoProp
     setIsLoading(true);
 
     try {
+      // Update user metadata
       const { error: updateError } = await supabase.auth.updateUser({
         email: formData.email,
         data: {
-          full_name: formData.fullName,
-          phone: formData.phone
+          full_name: formData.fullName
         }
       });
 
       if (updateError) throw updateError;
+
+      // Update profile in the database
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          full_name: formData.fullName,
+          phone: formData.phone,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
       setIsEditing(false);
+      
+      // Reload the page to show updated info
+      window.location.reload();
     } catch (err: any) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="h-6 bg-gray-200 rounded w-48 animate-pulse"></div>
+          <div className="h-8 bg-gray-200 rounded w-16 animate-pulse"></div>
+        </div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, index) => (
+            <div key={index}>
+              <div className="h-5 bg-gray-200 rounded w-24 mb-1 animate-pulse"></div>
+              <div className="h-10 bg-gray-200 rounded w-full animate-pulse"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6">

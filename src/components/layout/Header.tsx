@@ -14,9 +14,11 @@ export function Header({ onGetQuote }: HeaderProps) {
   const { user, signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [scrollPosition, setScrollPosition] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number>();
+  const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -34,6 +36,18 @@ export function Header({ onGetQuote }: HeaderProps) {
       if (timeoutRef.current) {
         window.clearTimeout(timeoutRef.current);
       }
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const position = window.scrollY;
+      setScrollPosition(position);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
@@ -60,6 +74,11 @@ export function Header({ onGetQuote }: HeaderProps) {
   };
 
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+  const isMainPage = location.pathname === '/' || 
+                     location.pathname === '/what-we-offer' || 
+                     location.pathname === '/meet-my-crew' || 
+                     location.pathname === '/about-us' ||
+                     location.pathname === '/support';
 
   const dropdownItems = [
     {
@@ -192,29 +211,39 @@ export function Header({ onGetQuote }: HeaderProps) {
     </div>
   );
 
+  const headerHeight = scrollPosition > 100 ? 'h-14' : 'h-16';
+  const headerPadding = scrollPosition > 100 ? 'py-2' : 'py-3';
+  const headerShadow = scrollPosition > 50 ? 'shadow-md' : 'shadow-sm';
+
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
+    <header 
+      ref={headerRef}
+      className={`fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100 transition-all duration-300 ${headerShadow}`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16 items-center">
+        <div className={`flex justify-between items-center transition-all duration-300 ${headerHeight} ${headerPadding}`}>
           <div className="flex items-center space-x-4">
             <Logo />
           </div>
 
           <div className="hidden md:flex items-center space-x-6">
-            {location.pathname === '/' && (
+            {isMainPage && (
               <>
-                <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium">
+                <Link to="/" className={`text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium ${location.pathname === '/' ? 'text-emerald-600' : ''}`}>
                   Home
-                </a>
-                <Link to="/what-we-offer" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium">
+                </Link>
+                <Link to="/what-we-offer" className={`text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium ${location.pathname === '/what-we-offer' ? 'text-emerald-600' : ''}`}>
                   What We Offer
                 </Link>
-                <Link to="/meet-my-crew" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium">
+                <Link to="/meet-my-crew" className={`text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium ${location.pathname === '/meet-my-crew' ? 'text-emerald-600' : ''}`}>
                   Meet My Crew
                 </Link>
-                <a href="#" className="text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium">
+                <Link to="/about-us" className={`text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium ${location.pathname === '/about-us' ? 'text-emerald-600' : ''}`}>
                   About Us
-                </a>
+                </Link>
+                <Link to="/support" className={`text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium ${location.pathname === '/support' ? 'text-emerald-600' : ''}`}>
+                  Contact Us
+                </Link>
               </>
             )}
             
@@ -223,6 +252,14 @@ export function Header({ onGetQuote }: HeaderProps) {
                 {onGetQuote && (
                   <button 
                     onClick={onGetQuote}
+                    className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity duration-200 shadow-lg hover:shadow-emerald-500/25 text-sm font-medium"
+                  >
+                    Get a quote
+                  </button>
+                )}
+                {!onGetQuote && isMainPage && (
+                  <button 
+                    onClick={() => navigate('/quote')}
                     className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity duration-200 shadow-lg hover:shadow-emerald-500/25 text-sm font-medium"
                   >
                     Get a quote
@@ -238,6 +275,14 @@ export function Header({ onGetQuote }: HeaderProps) {
               {onGetQuote && (
                 <button
                   onClick={onGetQuote}
+                  className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity duration-200 text-sm font-medium"
+                >
+                  Get a quote
+                </button>
+              )}
+              {!onGetQuote && isMainPage && (
+                <button
+                  onClick={() => navigate('/quote')}
                   className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity duration-200 text-sm font-medium"
                 >
                   Get a quote
@@ -261,20 +306,23 @@ export function Header({ onGetQuote }: HeaderProps) {
           className="absolute right-4 top-[4.5rem] w-64 bg-white rounded-xl shadow-lg border border-gray-100 animate-fade-in z-50 md:hidden"
         >
           <div className="p-4">
-            {location.pathname === '/' && (
+            {isMainPage && (
               <div className="flex flex-col items-center space-y-2 mb-4">
-                <a href="#" className="w-full text-center px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600 hover:bg-gray-50 rounded-lg">
+                <Link to="/" className={`w-full text-center px-3 py-2 text-base font-medium ${location.pathname === '/' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'} rounded-lg`}>
                   Home
-                </a>
-                <Link to="/what-we-offer" className="w-full text-center px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600 hover:bg-gray-50 rounded-lg">
+                </Link>
+                <Link to="/what-we-offer" className={`w-full text-center px-3 py-2 text-base font-medium ${location.pathname === '/what-we-offer' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'} rounded-lg`}>
                   What We Offer
                 </Link>
-                <Link to="/meet-my-crew" className="w-full text-center px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600 hover:bg-gray-50 rounded-lg">
+                <Link to="/meet-my-crew" className={`w-full text-center px-3 py-2 text-base font-medium ${location.pathname === '/meet-my-crew' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'} rounded-lg`}>
                   Meet My Crew
                 </Link>
-                <a href="#" className="w-full text-center px-3 py-2 text-base font-medium text-gray-600 hover:text-emerald-600 hover:bg-gray-50 rounded-lg">
+                <Link to="/about-us" className={`w-full text-center px-3 py-2 text-base font-medium ${location.pathname === '/about-us' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'} rounded-lg`}>
                   About Us
-                </a>
+                </Link>
+                <Link to="/support" className={`w-full text-center px-3 py-2 text-base font-medium ${location.pathname === '/support' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'} rounded-lg`}>
+                  Contact Us
+                </Link>
               </div>
             )}
             

@@ -8,6 +8,9 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
 }
 
+/**
+ * Reusable input component with optional label, icon, and error message
+ */
 export function Input({
   label,
   icon: Icon,

@@ -2,12 +2,14 @@ import React, { useState, useRef } from 'react';
 import { Camera, Check, X } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
+import { useUserData } from '../../hooks/useUserData';
 
 interface ProfileHeaderProps {
   user: User;
 }
 
 export function ProfileHeader({ user }: ProfileHeaderProps) {
+  const { profile, stats } = useUserData();
   const [isHovering, setIsHovering] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,10 +17,12 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
 
   // Calculate profile completion percentage
   const calculateCompletion = () => {
+    if (!profile) return 0;
+    
     const fields = [
-      user.user_metadata?.avatar_url,
-      user.user_metadata?.full_name,
-      user.user_metadata?.phone,
+      profile.avatar_url,
+      profile.full_name,
+      profile.phone,
       user.email
     ];
     const completedFields = fields.filter(Boolean).length;
@@ -77,8 +81,19 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
 
       if (updateError) throw updateError;
 
+      // Update profile in the database
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ 
+          avatar_url: publicUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
       // Delete old avatar if exists
-      const oldAvatarUrl = user.user_metadata?.avatar_url;
+      const oldAvatarUrl = profile?.avatar_url;
       if (oldAvatarUrl) {
         const oldFileName = oldAvatarUrl.split('/').pop();
         if (oldFileName) {
@@ -87,6 +102,9 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
             .remove([`${user.id}/${oldFileName}`]);
         }
       }
+
+      // Reload the page to show the new avatar
+      window.location.reload();
 
     } catch (err: any) {
       console.error('Error uploading image:', err);
@@ -102,7 +120,7 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
       <div className="relative h-32 bg-gradient-to-r from-emerald-600 to-teal-500">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundImage: `url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC40Ij48cGF0aCBkPSJNMzYgMzR2LTRoLTJ2NGgtNHYyaDR2NGgydi00aDR2LTJoLTR6bTAtMzBWMGgtMnY0aC00djJoNHY0aDJWNmg0VjRoLTR6TTYgMzR2LTRINHY0SDB2Mmg0djRoMnYtNGg0di0ySDZ6TTYgNFYwSDR2NEgwdjJoNHY0aDJWNmg0VjRINnoiLz48L2c+PC9nPjwvc3ZnPg==")`
           }} />
         </div>
       </div>
@@ -117,7 +135,7 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
           >
             <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-white">
               <img
-                src={user.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user.email}&background=10B981&color=fff`}
+                src={profile?.avatar_url || `https://ui-avatars.com/api/?name=${user.email}&background=10B981&color=fff`}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
@@ -167,9 +185,14 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
           </div>
 
           <h1 className="mt-4 text-2xl font-bold text-gray-900">
-            {user.user_metadata?.full_name || user.email}
+            {profile?.full_name || user.email?.split('@')[0]}
           </h1>
           <p className="text-sm text-gray-500">{user.email}</p>
+          {stats && (
+            <p className="text-sm text-emerald-600 mt-1">
+              {stats.loyaltyTier} Member • {stats.loyaltyPoints} Points
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -10,13 +10,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initializeAuth = async () => {
       try {
         // Check active session
-        const { data: { session } } = await supabase.auth.getSession();
-        setUser(session?.user ?? null);
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session retrieval error:', sessionError);
+          setUser(null);
+        } else {
+          setUser(session?.user ?? null);
+        }
 
         // Listen for auth changes
         const {
           data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
+          console.log("Auth state changed:", _event, session?.user?.email);
           setUser(session?.user ?? null);
         });
 

@@ -1,8 +1,15 @@
 import React from 'react';
 import { MainLayout } from '../components/layout/MainLayout';
 import { Shield, Award, Star, CheckCircle2, Users, GraduationCap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export function MeetMyCrew() {
+  const navigate = useNavigate();
+  
+  const handleGetQuote = () => {
+    navigate('/quote');
+  };
+  
   const teamMembers = [
     {
       name: "Sarah Johnson",
@@ -61,7 +68,7 @@ export function MeetMyCrew() {
   ];
 
   return (
-    <MainLayout>
+    <MainLayout onGetQuote={handleGetQuote}>
       <div className="min-h-screen bg-gray-50 pt-20">
         {/* Hero Section */}
         <div className="relative bg-gradient-to-b from-emerald-50 via-white to-white py-16">
@@ -200,7 +207,7 @@ export function MeetMyCrew() {
                 <div className="mt-8 lg:mt-0 lg:ml-8">
                   <div className="inline-flex rounded-lg shadow">
                     <button
-                      onClick={() => window.location.href = '/quote'}
+                      onClick={handleGetQuote}
                       className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-emerald-600 bg-white hover:bg-emerald-50 transition-colors duration-200"
                     >
                       Get a Quote
