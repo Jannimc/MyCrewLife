@@ -5,17 +5,22 @@ import { Database } from '../types/database';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Check if Supabase credentials are available
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('⚠️ Supabase credentials missing or invalid. Please connect to Supabase using the "Connect to Supabase" button in the top right corner.');
-} else {
-  console.log('✅ Supabase credentials found.');
-}
-
 // Create and export the Supabase client
 export const supabase = createClient<Database>(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder'
+  supabaseUrl,
+  supabaseAnonKey,
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    },
+    global: {
+      headers: {
+        'x-application-name': 'mycrew'
+      }
+    }
+  }
 );
 
 /**
@@ -23,13 +28,18 @@ export const supabase = createClient<Database>(
  * @returns Object with success status and message
  */
 export const testSupabaseConnection = async () => {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return {
+      success: false,
+      message: 'Supabase credentials missing. Please connect to Supabase using the "Connect to Supabase" button.'
+    };
+  }
+
   try {
-    const { error } = await supabase.from('_dummy_query').select('*').limit(1);
+    // Try to get the current session as a lightweight connection test
+    const { data, error } = await supabase.auth.getSession();
     
-    if (error && error.code === '42P01') {
-      // This is actually good - it means we connected but the table doesn't exist
-      return { success: true, message: 'Successfully connected to Supabase!' };
-    } else if (error) {
+    if (error) {
       return { 
         success: false, 
         message: `Connection error: ${error.message}`,
@@ -37,7 +47,10 @@ export const testSupabaseConnection = async () => {
       };
     }
     
-    return { success: true, message: 'Successfully connected to Supabase!' };
+    return { 
+      success: true, 
+      message: 'Successfully connected to Supabase!' 
+    };
   } catch (err: any) {
     return { 
       success: false, 
@@ -46,3 +59,12 @@ export const testSupabaseConnection = async () => {
     };
   }
 };
+
+// Initialize connection test
+testSupabaseConnection().then(result => {
+  if (!result.success) {
+    console.warn('⚠️ ' + result.message);
+  } else {
+    console.log('✅ ' + result.message);
+  }
+});

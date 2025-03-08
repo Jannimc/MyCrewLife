@@ -31,14 +31,15 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
       
       if (error) {
-        const authError = error as AuthError;
-        if (authError.message === 'Invalid login credentials') {
+        if (error.message === 'Invalid login credentials') {
           throw new Error('The email or password you entered is incorrect');
+        }
+        if (error.message.includes('Failed to fetch')) {
+          throw new Error('Unable to connect to authentication service. Please check your internet connection and try again.');
         }
         throw error;
       }
       
-      // Set user in store after successful sign in
       if (data.user) {
         set({ user: data.user });
       }
@@ -57,10 +58,19 @@ export const useAuthStore = create<AuthState>((set) => ({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
         },
       });
       
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('Failed to fetch')) {
+          throw new Error('Unable to connect to authentication service. Please check your internet connection and try again.');
+        }
+        throw error;
+      }
     } catch (error) {
       console.error('Auth store Google sign in error:', error);
       throw error instanceof Error 
@@ -76,20 +86,21 @@ export const useAuthStore = create<AuthState>((set) => ({
         email,
         password,
         options: {
-          // Don't redirect after signup - we want to stay on the booking page
           emailRedirectTo: `${window.location.origin}/auth/callback`,
-          // Auto confirm email
           data: {
             email_confirm: true
           }
         },
       });
       
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('Failed to fetch')) {
+          throw new Error('Unable to connect to authentication service. Please check your internet connection and try again.');
+        }
+        throw error;
+      }
       
-      // If we have a user, sign them in immediately
       if (data.user) {
-        // Auto sign in after signup
         const { error: signInError, data: signInData } = await supabase.auth.signInWithPassword({
           email,
           password
@@ -113,7 +124,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut: async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('Failed to fetch')) {
+          throw new Error('Unable to connect to authentication service. Please check your internet connection and try again.');
+        }
+        throw error;
+      }
       set({ user: null });
     } catch (error) {
       console.error('Auth store sign out error:', error);
