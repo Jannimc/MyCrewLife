@@ -6,7 +6,6 @@ import { PartnerLogos } from '../components/PartnerLogos';
 import { Services } from '../components/Services';
 import { Reviews } from '../components/Reviews';
 import { FAQ } from '../components/FAQ';
-import { Footer } from '../components/Footer';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 
 export function Home() {
@@ -35,9 +34,6 @@ export function Home() {
       </div>
       <div className="scroll-fade-in">
         <FAQ activeFaq={activeFaq} setActiveFaq={setActiveFaq} />
-      </div>
-      <div className="scroll-fade-in">
-        <Footer />
       </div>
     </MainLayout>
   );

@@ -1,5 +1,6 @@
 import React from 'react';
-import { CheckCircle } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
 interface PreferredDayQuestionProps {
   value: string;
@@ -10,38 +11,43 @@ export function PreferredDayQuestion({
   value,
   onChange
 }: PreferredDayQuestionProps) {
-  const options = [
-    { value: 'monday', label: 'Monday' },
-    { value: 'tuesday', label: 'Tuesday' },
-    { value: 'wednesday', label: 'Wednesday' },
-    { value: 'thursday', label: 'Thursday' },
-    { value: 'friday', label: 'Friday' },
-    { value: 'saturday', label: 'Saturday' }
-  ];
+  // Convert string date to Date object for DatePicker
+  const selectedDate = value ? new Date(value) : null;
+
+  // Get tomorrow's date as minimum selectable date
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  // Get date 3 months from now as maximum selectable date
+  const maxDate = new Date();
+  maxDate.setMonth(maxDate.getMonth() + 3);
+
+  // Filter out Sundays (0 = Sunday)
+  const filterWeekends = (date: Date) => {
+    return date.getDay() !== 0;
+  };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {options.map(option => (
-        <div
-          key={option.value}
-          onClick={() => onChange(option.value)}
-          className="relative group cursor-pointer transform transition-all duration-200 hover:scale-102"
-        >
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl blur opacity-0 group-hover:opacity-25 transition duration-200" />
-          <div className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
-            value === option.value
-              ? 'border-emerald-500 bg-emerald-50'
-              : 'border-gray-200 bg-white hover:border-emerald-200'
-          }`}>
-            <div className="flex items-center justify-between">
-              <span className="text-base font-medium text-gray-900">{option.label}</span>
-              {value === option.value && (
-                <CheckCircle className="w-5 h-5 text-emerald-500" />
-              )}
-            </div>
-          </div>
-        </div>
-      ))}
+    <div className="max-w-sm mx-auto">
+      <div className="relative group">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-200" />
+        <DatePicker
+          selected={selectedDate}
+          onChange={(date: Date) => onChange(date.toISOString().split('T')[0])}
+          minDate={tomorrow}
+          maxDate={maxDate}
+          filterDate={filterWeekends}
+          dateFormat="MMMM d, yyyy"
+          placeholderText="Select a date"
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 text-lg font-medium text-center cursor-pointer"
+          wrapperClassName="relative w-full"
+          calendarClassName="bg-white border border-gray-200 rounded-lg shadow-lg"
+          showPopperArrow={false}
+        />
+      </div>
+      <p className="mt-3 text-sm text-gray-500 text-center">
+        Choose any date within the next 3 months (excluding Sundays)
+      </p>
     </div>
   );
 }

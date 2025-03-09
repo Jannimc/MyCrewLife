@@ -14,10 +14,8 @@ export function useAuth() {
   const handleSignIn = useCallback(async (email: string, password: string) => {
     try {
       await signIn(email, password);
-      // Don't navigate automatically - let the calling component handle navigation
       return true;
     } catch (error) {
-      console.error('Sign in error:', error);
       throw error;
     }
   }, [signIn]);
@@ -26,10 +24,8 @@ export function useAuth() {
   const handleSignUp = useCallback(async (email: string, password: string) => {
     try {
       await signUp(email, password);
-      // Don't navigate automatically - let the calling component handle navigation
       return true;
     } catch (error) {
-      console.error('Sign up error:', error);
       throw error;
     }
   }, [signUp]);
@@ -40,7 +36,6 @@ export function useAuth() {
       await signOut();
       navigate('/');
     } catch (error) {
-      console.error('Sign out error:', error);
       throw error;
     }
   }, [signOut, navigate]);
@@ -51,7 +46,6 @@ export function useAuth() {
       await signInWithGoogle();
       // Navigation happens automatically after OAuth redirect
     } catch (error) {
-      console.error('Google sign in error:', error);
       throw error;
     }
   }, [signInWithGoogle]);

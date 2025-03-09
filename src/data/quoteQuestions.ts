@@ -207,16 +207,9 @@ export const questions: Question[] = [
   },
   {
     id: 'preferredDay',
-    title: 'What is your preferred cleaning day?',
+    title: 'When would you like your cleaning service?',
+    description: 'Select your preferred date for the cleaning service',
     type: 'select',
-    options: [
-      { value: 'monday', label: 'Monday' },
-      { value: 'tuesday', label: 'Tuesday' },
-      { value: 'wednesday', label: 'Wednesday' },
-      { value: 'thursday', label: 'Thursday' },
-      { value: 'friday', label: 'Friday' },
-      { value: 'saturday', label: 'Saturday' }
-    ],
     validation: { required: true }
   },
   {

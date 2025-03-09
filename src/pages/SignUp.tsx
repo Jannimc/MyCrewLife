@@ -33,24 +33,26 @@ export function SignUp() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     // Check Supabase connection first
     if (connectionStatus && !connectionStatus.success) {
       setError('Cannot connect to authentication service. Please try again later or contact support.');
+      setIsLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match');
+      setIsLoading(false);
       return;
     }
 
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
+      setIsLoading(false);
       return;
     }
-
-    setIsLoading(true);
 
     try {
       await signUp(email, password);
@@ -61,8 +63,7 @@ export function SignUp() {
         } 
       });
     } catch (err: any) {
-      setError(err.message || 'Failed to create account');
-      console.error('Sign up error:', err);
+      setError(err.message || 'Failed to create account. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -79,8 +80,7 @@ export function SignUp() {
     try {
       await signInWithGoogle();
     } catch (err: any) {
-      setError('Failed to sign up with Google');
-      console.error('Google sign up error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to sign up with Google');
     } finally {
       setIsLoading(false);
     }

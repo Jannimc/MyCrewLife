@@ -5,7 +5,7 @@ export function LiveChat() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-6 right-6">
+    <div className="fixed bottom-6 right-6 z-50">
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
@@ -17,7 +17,7 @@ export function LiveChat() {
       )}
 
       {isOpen && (
-        <div className="bg-white rounded-2xl shadow-xl w-96 h-[500px] flex flex-col animate-fade-in">
+        <div className="bg-white rounded-2xl shadow-xl w-96 h-[500px] flex flex-col animate-fade-in relative z-50">
           {/* Chat Header */}
           <div className="p-4 bg-gradient-to-r from-emerald-600 to-teal-500 rounded-t-2xl flex items-center justify-between">
             <div className="flex items-center">

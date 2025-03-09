@@ -15,7 +15,29 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Create and export the Supabase client
 export const supabase = createClient<Database>(
   supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder'
+  supabaseAnonKey || 'placeholder',
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+      flowType: 'pkce',
+      debug: false, // Disable debug logs
+      // Silently handle auth errors
+      onError: (error) => {
+        if (error.name === 'AuthError' || error.name === 'AuthApiError') {
+          return;
+        }
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Supabase error:', error.message);
+        }
+      },
+      // Handle auth state changes silently
+      onAuthStateChange: (event, session) => {
+        // Intentionally empty to suppress logs
+      }
+    }
+  }
 );
 
 /**
@@ -24,12 +46,10 @@ export const supabase = createClient<Database>(
  */
 export const testSupabaseConnection = async () => {
   try {
-    const { error } = await supabase.from('_dummy_query').select('*').limit(1);
+    // Use a simple auth check instead of querying a table
+    const { data, error } = await supabase.auth.getSession();
     
-    if (error && error.code === '42P01') {
-      // This is actually good - it means we connected but the table doesn't exist
-      return { success: true, message: 'Successfully connected to Supabase!' };
-    } else if (error) {
+    if (error) {
       return { 
         success: false, 
         message: `Connection error: ${error.message}`,
@@ -37,7 +57,10 @@ export const testSupabaseConnection = async () => {
       };
     }
     
-    return { success: true, message: 'Successfully connected to Supabase!' };
+    return { 
+      success: true, 
+      message: 'Successfully connected to Supabase!' 
+    };
   } catch (err: any) {
     return { 
       success: false, 

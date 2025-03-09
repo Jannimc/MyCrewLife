@@ -75,7 +75,12 @@ export function QuoteSummary({ formData, onEdit, onContinue }: QuoteSummaryProps
     }
 
     if (id === 'preferredDay') {
-      return value.charAt(0).toUpperCase() + value.slice(1);
+      return new Date(value).toLocaleDateString('en-GB', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
     }
 
     if (id === 'propertyType') {

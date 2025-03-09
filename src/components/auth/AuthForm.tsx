@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Lock, AlertCircle } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 
@@ -50,14 +50,6 @@ export function AuthForm({
         </p>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="mb-4 p-4 rounded-lg bg-red-50 flex items-start">
-          <AlertCircle className="w-5 h-5 text-red-500 mr-3 flex-shrink-0 mt-0.5" />
-          <p className="text-red-800 text-sm">{error}</p>
-        </div>
-      )}
-
       {/* Form */}
       <form onSubmit={onSubmit} className="space-y-6">
         <Input
@@ -68,6 +60,7 @@ export function AuthForm({
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
           required
+          error={error}
         />
 
         <Input
