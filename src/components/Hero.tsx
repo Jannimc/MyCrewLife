@@ -152,8 +152,8 @@ export function Hero({ postcode, setPostcode, onGetQuote }: HeroProps) {
           <main className="mt-32 mx-auto max-w-7xl px-4 sm:mt-40 sm:px-6 lg:mt-48 lg:px-8">
             <div className="text-center">
               {/* Trustpilot-style Rating */}
-              <div className="inline-flex items-center justify-center space-x-2 mb-6 bg-white/10 backdrop-blur-sm px-4 py-2 sm:px-6 sm:py-3 rounded-full shadow-md hover:shadow-lg transition-shadow duration-300">
-                <span className="text-sm sm:text-base text-gray-600 font-medium">Excellent</span>
+              <div className="inline-flex items-center justify-center space-x-2 mb-6 bg-emerald-900/80 backdrop-blur-sm px-4 py-2 sm:px-6 sm:py-3 rounded-full shadow-md hover:shadow-lg transition-shadow duration-300">
+                <span className="text-sm sm:text-base text-white font-medium">Excellent</span>
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 fill-current" />
