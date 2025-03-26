@@ -13,6 +13,8 @@ import { WhatWeOffer } from './pages/WhatWeOffer';
 import { MeetMyCrew } from './pages/MeetMyCrew';
 import { BookingConfirmation } from './pages/BookingConfirmation';
 import { AboutUs } from './pages/AboutUs';
+import { BecomeACleaner } from './pages/BecomeACleaner';
+import { BookingDetails } from './pages/BookingDetails';
 import { AuthProvider } from './components/AuthProvider';
 
 export default function App() {
@@ -32,7 +34,10 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/payment-methods" element={<PaymentMethods />} />
           <Route path="/bookings" element={<Bookings />} />
+          <Route path="/bookings/:id" element={<BookingDetails />} />
           <Route path="/support" element={<Support />} />
+          <Route path="/become-cleaner" element={<BecomeACleaner />} />
+          <Route path="/become-cleaner" element={<BecomeACleaner />} />
         </Routes>
       </Router>
     </AuthProvider>

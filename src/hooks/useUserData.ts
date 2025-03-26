@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './useAuth';
-import { Database } from '../types/database';
+import type { Database } from '../types/database';
 
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type Booking = Database['public']['Tables']['bookings']['Row'];
@@ -39,140 +39,72 @@ export function useUserData() {
     loyaltyTier: 'Bronze'
   });
 
-  useEffect(() => {
+  // Fetch user data function
+  const fetchData = async () => {
     if (!user) {
       setLoading(false);
       return;
     }
 
-    async function fetchUserData() {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // First, check if profile exists, if not create it
-        const { data: existingProfile, error: checkError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (checkError) {
-          console.error('Error checking profile:', checkError);
-          throw checkError;
-        }
-
-        // If profile doesn't exist, create it
-        if (!existingProfile) {
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert([
-              { 
-                id: user.id,
-                full_name: user.user_metadata?.full_name || null,
-                avatar_url: user.user_metadata?.avatar_url || null,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              }
-            ]);
-
-          if (insertError) {
-            console.error('Error creating profile:', insertError);
-            throw insertError;
-          }
-
-          // Also create loyalty points entry
-          const { error: loyaltyInsertError } = await supabase
-            .from('loyalty_points')
-            .insert([
-              {
-                user_id: user.id,
-                points: 0,
-                tier: 'Bronze',
-                updated_at: new Date().toISOString()
-              }
-            ]);
-
-          if (loyaltyInsertError) {
-            console.error('Error creating loyalty points:', loyaltyInsertError);
-            // Non-critical error, continue
-          }
-        }
-
-        // Now fetch the profile (either existing or newly created)
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (profileError) {
-          console.error('Error fetching profile:', profileError);
-          throw profileError;
-        }
-        
-        setProfile(profileData);
-
-        // Fetch bookings
-        const { data: bookingsData, error: bookingsError } = await supabase
-          .from('bookings')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('date', { ascending: true });
-
-        if (bookingsError) {
-          console.error('Error fetching bookings:', bookingsError);
-          throw bookingsError;
-        }
-        
-        setBookings(bookingsData || []);
-
-        // Fetch loyalty points
-        const { data: loyaltyData, error: loyaltyError } = await supabase
-          .from('loyalty_points')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (loyaltyError) {
-          console.error('Error fetching loyalty points:', loyaltyError);
-          // Non-critical error, continue with default values
-        }
-
-        // If no loyalty data, create default
-        if (!loyaltyData) {
-          const defaultLoyalty = {
-            user_id: user.id,
-            points: 0,
-            tier: 'Bronze',
-            updated_at: new Date().toISOString()
-          };
-          
-          setLoyaltyPoints(defaultLoyalty);
-          calculateStats(bookingsData || [], defaultLoyalty);
-        } else {
-          setLoyaltyPoints(loyaltyData);
-          calculateStats(bookingsData || [], loyaltyData);
-        }
-      } catch (err: any) {
-        console.error('Error fetching user data:', err);
-        setError(err.message);
-        
-        // Set default values even if there's an error
-        setStats({
-          nextCleaning: null,
-          totalBookings: 0,
-          averageRating: 0,
-          reviewCount: 0,
-          loyaltyPoints: 0,
-          loyaltyTier: 'Bronze'
-        });
-      } finally {
-        setLoading(false);
+    try {
+      // Check if Supabase is properly initialized
+      if (!supabase.auth.getSession) {
+        throw new Error('Supabase client not properly initialized');
       }
-    }
 
-    fetchUserData();
+      // Fetch profile data
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) throw profileError;
+      setProfile(profileData);
+
+      // Fetch bookings
+      const { data: bookingsData, error: bookingsError } = await supabase
+        .from('bookings')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: true });
+
+      if (bookingsError) throw bookingsError;
+      setBookings(bookingsData || []);
+
+      // Fetch loyalty points
+      const { data: loyaltyData, error: loyaltyError } = await supabase
+        .from('loyalty_points')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!loyaltyError && loyaltyData) {
+        setLoyaltyPoints(loyaltyData);
+        calculateStats(bookingsData || [], loyaltyData);
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch user data';
+      setError(errorMessage);
+      // Reset states on error
+      setProfile(null);
+      setBookings([]);
+      setLoyaltyPoints(null);
+      setStats({
+        nextCleaning: null,
+        totalBookings: 0,
+        averageRating: 0,
+        reviewCount: 0,
+        loyaltyPoints: 0,
+        loyaltyTier: 'Bronze'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { 
+    fetchData();
   }, [user]);
 
   /**
@@ -186,23 +118,18 @@ export function useUserData() {
     const upcomingBookings = bookings.filter(booking => {
       const bookingDate = new Date(booking.date);
       bookingDate.setHours(0, 0, 0, 0);
-      return bookingDate >= today && booking.status === 'upcoming';
-    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-    const nextCleaning = upcomingBookings.length > 0 
-      ? { date: upcomingBookings[0].date, time: upcomingBookings[0].time } 
-      : null;
-
-    // Calculate total bookings (last 12 months)
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-    
-    const recentBookings = bookings.filter(booking => {
-      const bookingDate = new Date(booking.date);
-      return bookingDate >= oneYearAgo;
+      return bookingDate >= today && booking.status !== 'cancelled';
     });
 
-    const totalBookings = recentBookings.length;
+    const nextCleaning = upcomingBookings.length > 0 
+      ? { 
+          date: upcomingBookings[0].date,
+          time: upcomingBookings[0].time 
+        }
+      : null;
+    
+    // Calculate total active bookings (not cancelled)
+    const totalBookings = bookings.filter(booking => booking.status !== 'cancelled').length;
 
     // Calculate average rating
     const completedBookings = bookings.filter(booking => 
@@ -228,6 +155,14 @@ export function useUserData() {
     });
   };
 
+  // Refetch user data function
+  const handleRefetch = async () => {
+    setLoading(true);
+    setError(null);
+    fetchData();
+  };
+
+  // Return hook values
   return {
     profile,
     bookings,
@@ -235,7 +170,13 @@ export function useUserData() {
     stats,
     loading,
     error,
-    upcomingBookings: bookings.filter(booking => booking.status === 'upcoming'),
-    pastBookings: bookings.filter(booking => booking.status === 'completed')
+    refetchUserData: fetchData,
+    upcomingBookings: bookings.filter(booking => {
+      return booking.status === 'upcoming';
+    }),
+    pastBookings: bookings.filter(booking => {
+      return booking.status === 'completed';
+    }),
+    cancelledBookings: bookings.filter(booking => booking.status === 'cancelled'),
   };
 }

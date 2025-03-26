@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CheckCircle } from 'lucide-react';
 import { MainLayout } from '../components/layout/MainLayout';
 import { ProfileHeader } from '../components/profile/ProfileHeader';
 import { PersonalInfo } from '../components/profile/PersonalInfo';
@@ -23,8 +23,8 @@ export function Profile() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 pt-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="min-h-screen bg-gray-50 pt-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center text-gray-600 hover:text-emerald-600 transition-colors duration-200 mb-6"
@@ -33,7 +33,14 @@ export function Profile() {
             <span>Back</span>
           </button>
 
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Header */}
+            <div className="lg:col-span-3">
+              <ProfileHeader user={user} />
+            </div>
+
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-6">
             {loading ? (
               // Loading skeleton
               <>
@@ -63,14 +70,38 @@ export function Profile() {
                 ))}
               </>
             ) : (
-              <>
-                <ProfileHeader user={user} />
+              <div className="space-y-6">
                 <PersonalInfo user={user} isEditing={isEditing} setIsEditing={setIsEditing} />
-                <AccountSettings />
                 <AddressManager />
-                <ProfileFooter />
-              </>
+              </div>
             )}
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              <AccountSettings />
+              <div className="bg-white rounded-2xl shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile Completion</h2>
+                <div className="space-y-4">
+                  <p className="text-gray-600">Complete your profile to get the most out of MyCrew:</p>
+                  <ul className="space-y-2 text-gray-600">
+                    <li className="flex items-center">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2" />
+                      Add a profile photo
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2" />
+                      Verify your email
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle className="w-5 h-5 text-emerald-500 mr-2" />
+                      Add a phone number
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <ProfileFooter />
+            </div>
           </div>
         </div>
       </div>

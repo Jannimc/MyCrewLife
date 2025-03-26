@@ -26,7 +26,7 @@ export function Dashboard() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 pt-20">
+      <div className="min-h-screen bg-gray-50 pt-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Welcome Section */}
           <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
@@ -41,12 +41,6 @@ export function Dashboard() {
                 </h1>
                 <p className="text-gray-500 mt-1">Here's what's happening with your cleaning services</p>
               </div>
-              <button
-                onClick={() => navigate('/quote')}
-                className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-lg font-medium hover:opacity-90 transition-opacity duration-200"
-              >
-                Book New Cleaning
-              </button>
             </div>
           </div>
 

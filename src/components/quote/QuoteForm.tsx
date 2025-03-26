@@ -175,30 +175,9 @@ export function QuoteForm({
    * Navigate directly to booking confirmation page
    */
   const handleContinueToCheckout = () => {
-    // Generate a random cleaner ID (1, 2, or 3)
-    const randomCleanerId = Math.floor(Math.random() * 3) + 1;
-    
-    // Generate a random time slot based on preferred time
-    let timeSlot = '';
-    switch(formData.preferredTime) {
-      case 'morning':
-        timeSlot = ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM'][Math.floor(Math.random() * 4)];
-        break;
-      case 'afternoon':
-        timeSlot = ['12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM'][Math.floor(Math.random() * 4)];
-        break;
-      case 'evening':
-        timeSlot = ['4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM'][Math.floor(Math.random() * 4)];
-        break;
-      default:
-        timeSlot = ['9:00 AM', '1:00 PM', '5:00 PM'][Math.floor(Math.random() * 3)];
-    }
-    
     navigate('/booking-confirmation', {
       state: {
-        quoteData: formData,
-        cleanerId: String(randomCleanerId),
-        timeSlot
+        quoteData: formData
       }
     });
   };

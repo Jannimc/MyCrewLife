@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Send, AlertCircle } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../hooks/useAuth';
 
 export function ContactForm() {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -14,17 +17,30 @@ export function ContactForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSuccess(false);
     setIsSubmitting(true);
     setError('');
     setSuccess(false);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Submit message to Supabase
+      const { error: submitError } = await supabase
+        .from('contact_messages')
+        .insert([{
+          user_id: user?.id,
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message
+        }]);
+
+      if (submitError) throw submitError;
+
       setSuccess(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
-      setError('Failed to send message. Please try again.');
+      console.error('Error submitting message:', err);
+      setError(err instanceof Error ? err.message : 'Failed to send message. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

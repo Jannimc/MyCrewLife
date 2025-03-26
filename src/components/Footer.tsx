@@ -29,9 +29,9 @@ export function Footer() {
     {
       title: "Social",
       links: [
-        { name: "Facebook", href: "#facebook" },
-        { name: "Instagram", href: "#instagram" },
-        { name: "Twitter", href: "#twitter" }
+        { name: "Facebook", href: "https://www.facebook.com" },
+        { name: "Instagram", href: "https://www.instagram.com" },
+        { name: "Twitter", href: "https://www.twitter.com" }
       ]
     }
   ];

@@ -48,6 +48,17 @@ export interface Database {
           duration: string
           created_at: string
           rating: number | null
+          property_type: string | null
+          residential_areas: Record<string, number> | null
+          commercial_areas: Record<string, number> | null
+          other_areas: string[] | null
+          custom_area_name: string | null
+          extra_services: string[] | null
+          frequency: string | null
+          special_requirements: string | null
+          has_pets: boolean | null
+          pet_details: string | null
+          access_instructions: string | null
         }
         Insert: {
           id?: string
@@ -61,6 +72,17 @@ export interface Database {
           duration: string
           created_at?: string
           rating?: number | null
+          property_type?: string | null
+          residential_areas?: Record<string, number> | null
+          commercial_areas?: Record<string, number> | null
+          other_areas?: string[] | null
+          custom_area_name?: string | null
+          extra_services?: string[] | null
+          frequency?: string | null
+          special_requirements?: string | null
+          has_pets?: boolean | null
+          pet_details?: string | null
+          access_instructions?: string | null
         }
         Update: {
           id?: string
@@ -74,6 +96,17 @@ export interface Database {
           duration?: string
           created_at?: string
           rating?: number | null
+          property_type?: string | null
+          residential_areas?: Record<string, number> | null
+          commercial_areas?: Record<string, number> | null
+          other_areas?: string[] | null
+          custom_area_name?: string | null
+          extra_services?: string[] | null
+          frequency?: string | null
+          special_requirements?: string | null
+          has_pets?: boolean | null
+          pet_details?: string | null
+          access_instructions?: string | null
         }
       }
       loyalty_points: {

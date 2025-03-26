@@ -55,7 +55,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         data: { user: null, session: null }
       }));
       
-<<<<<<< HEAD
       const { error: signInError, data } = response;
       
       if (signInError) {
@@ -73,20 +72,6 @@ export const useAuthStore = create<AuthState>((set) => ({
       
       if (!data.user) {
         throw new Error('No user data received');
-=======
-      if (error) {
-        if (error.message === 'Invalid login credentials') {
-          throw new Error('The email or password you entered is incorrect');
-        }
-        if (error.message.includes('Failed to fetch')) {
-          throw new Error('Unable to connect to authentication service. Please check your internet connection and try again.');
-        }
-        throw error;
-      }
-      
-      if (data.user) {
-        set({ user: data.user });
->>>>>>> 7249e5a810fa2fa4154e67656d1b1489b80295e8
       }
 
       set({ user: data.user });
@@ -103,22 +88,11 @@ export const useAuthStore = create<AuthState>((set) => ({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent'
-          }
         },
       });
       
       if (error) {
-<<<<<<< HEAD
         throw new Error('Unable to sign in with Google. Please try again.');
-=======
-        if (error.message.includes('Failed to fetch')) {
-          throw new Error('Unable to connect to authentication service. Please check your internet connection and try again.');
-        }
-        throw error;
->>>>>>> 7249e5a810fa2fa4154e67656d1b1489b80295e8
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -145,7 +119,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
 
     try {
-<<<<<<< HEAD
       let response;
       try {
         response = await supabase.auth.signUp({
@@ -156,15 +129,6 @@ export const useAuthStore = create<AuthState>((set) => ({
             data: {
               email_confirm: true
             }
-=======
-      const { error, data } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-          data: {
-            email_confirm: true
->>>>>>> 7249e5a810fa2fa4154e67656d1b1489b80295e8
           }
         });
       } catch (e) {
@@ -172,7 +136,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         throw new Error('Unable to connect to authentication service. Please try again.');
       }
       
-<<<<<<< HEAD
       const { error: signUpError, data } = response;
       
       if (signUpError) {
@@ -187,17 +150,10 @@ export const useAuthStore = create<AuthState>((set) => ({
           default:
             throw new Error('Unable to create account. Please try again.');
         }
-=======
-      if (error) {
-        if (error.message.includes('Failed to fetch')) {
-          throw new Error('Unable to connect to authentication service. Please check your internet connection and try again.');
-        }
-        throw error;
->>>>>>> 7249e5a810fa2fa4154e67656d1b1489b80295e8
       }
       
+      // If we have a user, sign them in immediately
       if (data.user) {
-<<<<<<< HEAD
         try {
           let signInResponse;
           try {
@@ -223,17 +179,6 @@ export const useAuthStore = create<AuthState>((set) => ({
         } catch (error) {
           // Don't throw on auto-login failure, let user sign in manually
           return;
-=======
-        const { error: signInError, data: signInData } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-        
-        if (signInError) {
-          console.error('Auto sign in after signup failed:', signInError);
-        } else if (signInData.user) {
-          set({ user: signInData.user });
->>>>>>> 7249e5a810fa2fa4154e67656d1b1489b80295e8
         }
       }
     } catch (error) {
@@ -246,20 +191,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut: async () => {
     try {
       const { error } = await supabase.auth.signOut();
-<<<<<<< HEAD
       
       if (error) {
         throw new Error('Unable to sign out. Please try again.');
       }
       
-=======
-      if (error) {
-        if (error.message.includes('Failed to fetch')) {
-          throw new Error('Unable to connect to authentication service. Please check your internet connection and try again.');
-        }
-        throw error;
-      }
->>>>>>> 7249e5a810fa2fa4154e67656d1b1489b80295e8
       set({ user: null });
     } catch (error) {
       if (error instanceof Error) {

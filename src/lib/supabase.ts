@@ -5,20 +5,21 @@ import { Database } from '../types/database';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Check if Supabase credentials are available
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn('⚠️ Supabase credentials missing or invalid. Please connect to Supabase using the "Connect to Supabase" button in the top right corner.');
+} else {
+  console.log('✅ Supabase credentials found.');
+}
+
 // Create and export the Supabase client
 export const supabase = createClient<Database>(
-<<<<<<< HEAD
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder',
-=======
-  supabaseUrl,
-  supabaseAnonKey,
->>>>>>> 7249e5a810fa2fa4154e67656d1b1489b80295e8
   {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-<<<<<<< HEAD
       detectSessionInUrl: true,
       flowType: 'pkce',
       debug: false, // Disable debug logs
@@ -34,13 +35,6 @@ export const supabase = createClient<Database>(
       // Handle auth state changes silently
       onAuthStateChange: (event, session) => {
         // Intentionally empty to suppress logs
-=======
-      detectSessionInUrl: true
-    },
-    global: {
-      headers: {
-        'x-application-name': 'mycrew'
->>>>>>> 7249e5a810fa2fa4154e67656d1b1489b80295e8
       }
     }
   }
@@ -51,19 +45,8 @@ export const supabase = createClient<Database>(
  * @returns Object with success status and message
  */
 export const testSupabaseConnection = async () => {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return {
-      success: false,
-      message: 'Supabase credentials missing. Please connect to Supabase using the "Connect to Supabase" button.'
-    };
-  }
-
   try {
-<<<<<<< HEAD
     // Use a simple auth check instead of querying a table
-=======
-    // Try to get the current session as a lightweight connection test
->>>>>>> 7249e5a810fa2fa4154e67656d1b1489b80295e8
     const { data, error } = await supabase.auth.getSession();
     
     if (error) {
@@ -86,12 +69,3 @@ export const testSupabaseConnection = async () => {
     };
   }
 };
-
-// Initialize connection test
-testSupabaseConnection().then(result => {
-  if (!result.success) {
-    console.warn('⚠️ ' + result.message);
-  } else {
-    console.log('✅ ' + result.message);
-  }
-});

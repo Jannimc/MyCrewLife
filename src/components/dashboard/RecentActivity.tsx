@@ -1,16 +1,40 @@
 import React from 'react';
-import { Calendar, MapPin, Star, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, Star, ArrowRight, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserData } from '../../hooks/useUserData';
 
 export function RecentActivity() {
   const { bookings, loading } = useUserData();
   const navigate = useNavigate();
+  const [recentBookings, setRecentBookings] = React.useState(bookings);
   
-  // Get the most recent upcoming booking and the most recent completed booking
-  const recentBookings = bookings
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 2);
+  // Get recent bookings (upcoming and past)
+  const getRecentBookings = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Get all bookings sorted by date
+    const sortedBookings = [...bookings].sort((a, b) => {
+      // Sort by created_at first, then by date
+      const createdAtA = new Date(a.created_at).getTime();
+      const createdAtB = new Date(b.created_at).getTime();
+      if (createdAtA !== createdAtB) {
+        return createdAtB - createdAtA; // Most recent created first
+      }
+      // If created at same time, sort by date
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return dateB - dateA;
+    });
+    
+    // Get the 5 most recent bookings
+    return sortedBookings.slice(0, 5);
+  };
+
+  // Update recent bookings when bookings change
+  React.useEffect(() => {
+    setRecentBookings(getRecentBookings());
+  }, [bookings]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -19,6 +43,32 @@ export function RecentActivity() {
       day: 'numeric',
       year: 'numeric'
     });
+  };
+
+  const formatServiceType = (serviceType: string) => {
+    return serviceType
+      .split(',')
+      .map(service => 
+        service
+          .trim()
+          .split('_')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+      )
+      .join(', ');
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'upcoming':
+        return 'bg-emerald-100 text-emerald-800';
+      case 'completed':
+        return 'bg-blue-100 text-blue-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
   if (loading) {
@@ -59,12 +109,14 @@ export function RecentActivity() {
     <div className="bg-white rounded-2xl shadow-sm p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
-        <button
-          onClick={() => navigate('/bookings')}
-          className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-        >
-          View All
-        </button>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => navigate('/bookings')}
+            className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+          >
+            View All
+          </button>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -79,10 +131,10 @@ export function RecentActivity() {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
                     <span className="text-base font-medium text-gray-900">
-                      {booking.service_type}
+                      {formatServiceType(booking.service_type)}
                     </span>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                      {booking.status === 'upcoming' ? 'Upcoming' : 'Completed'}
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
+                      {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                     </span>
                   </div>
                   {booking.status === 'completed' && booking.rating && (
@@ -110,7 +162,7 @@ export function RecentActivity() {
                       <button 
                         onClick={() => navigate('/bookings')}
                         className="px-4 py-2 text-sm font-medium text-emerald-600 hover:text-emerald-700"
-                      >
+                      > 
                         View Details
                       </button>
                     ) : (

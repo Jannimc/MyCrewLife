@@ -1,1 +1,0 @@
-// Remove this file as it's been replaced by Header component

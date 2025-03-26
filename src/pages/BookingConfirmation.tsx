@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MainLayout } from '../components/layout/MainLayout';
-import { ArrowLeft, CreditCard, Calendar, Clock, MapPin, User, Shield, CheckCircle, AlertCircle } from 'lucide-react';
+import { Star, Award, Calendar, Clock, CheckCircle2, ArrowLeft, ArrowRight, CreditCard, AlertCircle, MapPin, Shield, User } from 'lucide-react';
 import { QuoteFormData } from '../types/quote';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/common/Button';
@@ -79,7 +79,7 @@ export function BookingConfirmation() {
   const [error, setError] = useState<string | null>(null);
   const [redirectCountdown, setRedirectCountdown] = useState(5);
   const [bookingStatus, setBookingStatus] = useState<'pending' | 'approved' | 'declined'>('pending');
-  
+
   // Check if user is authenticated on mount and after auth actions
   useEffect(() => {
     const checkAuth = async () => {
@@ -92,7 +92,7 @@ export function BookingConfirmation() {
     
     checkAuth();
   }, []);
-  
+
   // Countdown timer for redirect after successful booking
   useEffect(() => {
     if (isComplete && redirectCountdown > 0) {
@@ -105,7 +105,7 @@ export function BookingConfirmation() {
       navigate('/dashboard');
     }
   }, [isComplete, redirectCountdown, navigate]);
-  
+
   // Handle payment form changes
   const handlePaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -122,7 +122,7 @@ export function BookingConfirmation() {
       }));
     }
   };
-  
+
   // Format card number with spaces
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
@@ -140,7 +140,7 @@ export function BookingConfirmation() {
       return value;
     }
   };
-  
+
   // Format expiry date
   const formatExpiry = (value: string) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
@@ -151,7 +151,7 @@ export function BookingConfirmation() {
     
     return v;
   };
-  
+
   // Handle address form changes
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -168,7 +168,7 @@ export function BookingConfirmation() {
       }));
     }
   };
-  
+
   // Handle auth form changes
   const handleAuthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -185,7 +185,7 @@ export function BookingConfirmation() {
       }));
     }
   };
-  
+
   // Validate payment form
   const validatePaymentForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -228,7 +228,7 @@ export function BookingConfirmation() {
     setPaymentErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  
+
   // Validate address form
   const validateAddressForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -254,7 +254,7 @@ export function BookingConfirmation() {
     setAddressErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  
+
   // Validate auth form
   const validateAuthForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -286,7 +286,7 @@ export function BookingConfirmation() {
     setAuthErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  
+
   // Handle login
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -314,7 +314,7 @@ export function BookingConfirmation() {
       setIsProcessing(false);
     }
   };
-  
+
   // Handle signup
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -345,7 +345,7 @@ export function BookingConfirmation() {
       setIsProcessing(false);
     }
   };
-  
+
   // Process the booking
   const processBooking = async () => {
     try {
@@ -360,12 +360,23 @@ export function BookingConfirmation() {
           const bookingData = {
             user_id: sessionData.session.user.id,
             service_type: Array.isArray(quoteData.services) ? quoteData.services.join(', ') : 'Regular Cleaning',
-            date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+            date: quoteData.preferredDay,
             time: timeSlot || '9:00 AM',
             address: `${addressForm.street}, ${addressForm.city}, ${addressForm.postcode}`,
-            cleaner: 'Awaiting Assignment', // Changed from specific cleaner name to generic message
+            cleaner: 'Awaiting Assignment',
             status: 'upcoming',
-            duration: '3 hours'
+            duration: '3 hours',
+            property_type: quoteData.propertyType,
+            residential_areas: quoteData.residentialAreas,
+            commercial_areas: quoteData.commercialAreas,
+            other_areas: quoteData.otherAreas,
+            custom_area_name: quoteData.customAreaName,
+            extra_services: quoteData.extraServices,
+            frequency: quoteData.frequency,
+            special_requirements: quoteData.specialRequirements,
+            has_pets: quoteData.hasPets,
+            pet_details: quoteData.petDetails,
+            access_instructions: quoteData.accessInstructions
           };
           
           // Insert the booking
@@ -392,11 +403,12 @@ export function BookingConfirmation() {
       setIsProcessing(false);
     }
   };
-  
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsProcessing(true);
     
     // Validate payment form
     const isPaymentValid = validatePaymentForm();
@@ -407,6 +419,43 @@ export function BookingConfirmation() {
     // If any form is invalid, stop submission
     if (!isPaymentValid || !isAddressValid) {
       return;
+    }
+    
+    // Save address if requested
+    if (addressForm.saveAddress && user) {
+      try {
+        // Check if this is the first address (will be default)
+        const { data: existingAddresses } = await supabase
+          .from('addresses')
+          .select('id')
+          .eq('user_id', user.id);
+        
+        const isFirstAddress = !existingAddresses || existingAddresses.length === 0;
+        
+        // If setting as default or first address, unset other defaults
+        if (isFirstAddress) {
+          await supabase
+            .from('addresses')
+            .update({ is_default: false })
+            .eq('user_id', user.id);
+        }
+        
+        // Save the address
+        const { error: addressError } = await supabase
+          .from('addresses')
+          .insert({
+            user_id: user.id,
+            label: 'Home',
+            street: addressForm.street,
+            city: addressForm.city,
+            postcode: addressForm.postcode,
+            is_default: isFirstAddress
+          });
+          
+        if (addressError) throw addressError;
+      } catch (err) {
+        console.error('Error saving address:', err);
+      }
     }
     
     // If user is logged in, process booking
@@ -422,7 +471,7 @@ export function BookingConfirmation() {
       }
     }
   };
-  
+
   // If no data, show loading
   if (!quoteData) {
     return (
@@ -437,10 +486,10 @@ export function BookingConfirmation() {
       </MainLayout>
     );
   }
-  
+
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 pt-20">
+      <div className="min-h-screen bg-gray-50 pt-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Back button */}
           <button
@@ -463,7 +512,7 @@ export function BookingConfirmation() {
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6 mb-8 animate-fade-in">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <CheckCircle className="h-8 w-8 text-emerald-500" />
+                  <CheckCircle2 className="h-8 w-8 text-emerald-500" />
                 </div>
                 <div className="ml-4">
                   <h3 className="text-lg font-medium text-emerald-800">Booking Confirmed!</h3>
@@ -868,8 +917,6 @@ export function BookingConfirmation() {
                         </span>
                       </div>
                       
-                      {/* Removed the cleaner name section */}
-                      
                       <div className="flex items-center text-sm text-gray-600">
                         <MapPin className="w-4 h-4 text-emerald-500 mr-2" />
                         <span>{quoteData.postcode}</span>
@@ -883,12 +930,12 @@ export function BookingConfirmation() {
                   
                   {/* Security note */}
                   <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200">
-                    <div className="flex items-start">
-                      <Shield className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                      <div className="ml-3">
+                    <div className="flex items-start space-x-3">
+                      <Shield className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                      <div>
                         <h3 className="text-sm font-medium text-gray-900">Secure Checkout</h3>
-                        <p className="mt-1 text-xs text-gray-500">
-                          Your payment information is encrypted and securely processed. We never store your full card details.
+                        <p className="text-sm text-gray-500 mt-1">
+                          Your payment information is encrypted and securely processed. We never store your full card details on our servers.
                         </p>
                       </div>
                     </div>

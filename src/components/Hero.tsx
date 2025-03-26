@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Star, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PostcodeInput } from './common/PostcodeInput';
 
 const slides = [
   {
@@ -89,7 +90,7 @@ export function Hero({ postcode, setPostcode, onGetQuote }: HeroProps) {
 
     // Basic format validation
     if (!postcodeRegex.test(postcode)) {
-      setError('Please enter a valid UK postcode format');
+      setError('Please enter a valid UK postcode');
       return;
     }
 
@@ -152,14 +153,14 @@ export function Hero({ postcode, setPostcode, onGetQuote }: HeroProps) {
           <main className="mt-32 mx-auto max-w-7xl px-4 sm:mt-40 sm:px-6 lg:mt-48 lg:px-8">
             <div className="text-center">
               {/* Trustpilot-style Rating */}
-              <div className="inline-flex items-center justify-center space-x-2 mb-6 bg-emerald-900/80 backdrop-blur-sm px-4 py-2 sm:px-6 sm:py-3 rounded-full shadow-md hover:shadow-lg transition-shadow duration-300">
-                <span className="text-sm sm:text-base text-white font-medium">Excellent</span>
+              <div className="inline-flex items-center justify-center space-x-2 mb-6 bg-emerald-900/70 backdrop-blur-sm px-4 py-2 sm:px-6 sm:py-3 rounded-full shadow-md hover:shadow-lg transition-shadow duration-300">
+                <span className="text-sm sm:text-base text-emerald-50 font-medium">Excellent</span>
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 fill-current" />
                   ))}
                 </div>
-                <span className="text-sm sm:text-base text-white font-medium">on Trustpilot</span>
+                <span className="text-sm sm:text-base text-emerald-50 font-medium">on Trustpilot</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight font-extrabold text-white mb-4 sm:mb-6">
@@ -177,38 +178,33 @@ export function Hero({ postcode, setPostcode, onGetQuote }: HeroProps) {
               <form onSubmit={handleSubmit} className="mt-8 sm:mt-10 max-w-md mx-auto">
                 <div className="relative group">
                   <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-600 to-teal-500 rounded-lg blur opacity-30 group-hover:opacity-50 transition duration-200" />
-                  <div className="relative flex flex-col sm:flex-row gap-2 sm:gap-0">
-                    <div className="relative flex-grow">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Search className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="text"
+                  <div className="relative flex flex-col sm:flex-row sm:items-stretch gap-2 sm:gap-0">
+                    <div className="flex-1 min-w-0">
+                      <PostcodeInput
                         value={postcode}
-                        onChange={(e) => {
-                          setPostcode(e.target.value.toUpperCase());
+                        onChange={(value) => {
+                          setPostcode(value);
                           setError(null);
                         }}
-                        className={`block w-full pl-11 pr-4 py-4 border border-gray-200 rounded-lg sm:rounded-r-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white shadow-sm text-gray-900 ${
-                          error ? 'border-red-300' : ''
-                        }`}
-                        placeholder="Enter your postcode"
-                        maxLength={8}
+                        error={error}
+                        isValidating={isValidating}
                       />
                     </div>
-                    <button 
-                      type="submit"
-                      disabled={isValidating || !postcode}
-                      className="w-full sm:w-auto px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-lg sm:rounded-l-none hover:opacity-90 transition-opacity duration-200 font-medium shadow-lg hover:shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isValidating ? (
-                        <div className="flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-                        </div>
-                      ) : (
-                        'Find your cleaner'
-                      )}
-                    </button>
+                    <div className="w-full sm:w-[180px] flex-shrink-0">
+                      <button 
+                        type="submit"
+                        disabled={isValidating || !postcode}
+                        className="w-full h-[56px] px-6 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-lg sm:rounded-l-none hover:opacity-90 transition-opacity duration-200 font-medium shadow-lg hover:shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center justify-center"
+                      >
+                        {isValidating ? (
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                          </div>
+                        ) : (
+                          'Find your cleaner'
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
                 {error && (

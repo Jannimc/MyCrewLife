@@ -3,7 +3,7 @@ import { Calendar, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface EmptyStateProps {
-  type?: 'upcoming' | 'past';
+  type?: 'upcoming' | 'past' | 'cancelled';
 }
 
 export function EmptyState({ type = 'upcoming' }: EmptyStateProps) {
@@ -17,22 +17,28 @@ export function EmptyState({ type = 'upcoming' }: EmptyStateProps) {
       <h3 className="text-lg font-semibold text-gray-900 mb-2">
         {type === 'upcoming' 
           ? 'No Upcoming Bookings'
-          : 'No Past Bookings'
+          : type === 'past'
+          ? 'No Past Bookings'
+          : 'No Cancelled Bookings'
         }
       </h3>
       <p className="text-gray-500 mb-6">
         {type === 'upcoming'
           ? 'Book your first cleaning service and experience the MyCrew difference.'
-          : 'You haven\'t completed any bookings yet. Start by booking your first cleaning service.'
+          : type === 'past'
+          ? 'You haven\'t completed any bookings yet. Start by booking your first cleaning service.'
+          : 'You haven\'t cancelled any bookings. We hope you continue to enjoy our services!'
         }
       </p>
-      <button
-        onClick={() => navigate('/quote')}
-        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-lg font-medium hover:opacity-90 transition-opacity duration-200"
-      >
-        Book Now
-        <ArrowRight className="w-4 h-4 ml-2" />
-      </button>
+      {type !== 'cancelled' && (
+        <button
+          onClick={() => navigate('/quote')}
+          className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-lg font-medium hover:opacity-90 transition-opacity duration-200"
+        >
+          Book Now
+          <ArrowRight className="w-4 h-4 ml-2" />
+        </button>
+      )}
     </div>
   );
 }

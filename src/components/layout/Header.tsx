@@ -77,8 +77,18 @@ export function Header({ onGetQuote }: HeaderProps) {
   const isMainPage = location.pathname === '/' || 
                      location.pathname === '/what-we-offer' || 
                      location.pathname === '/meet-my-crew' || 
-                     location.pathname === '/about-us' ||
-                     location.pathname === '/support';
+                     location.pathname === '/about-us' || 
+                     location.pathname === '/support' ||
+                     location.pathname === '/become-cleaner' ||
+                     location.pathname === '/quote' || 
+                     location.pathname === '/booking-confirmation' ||
+                     isAuthPage;
+
+  const isDashboardPage = location.pathname === '/dashboard' ||
+                         location.pathname === '/profile' ||
+                         location.pathname === '/bookings' ||
+                         location.pathname === '/payment-methods' ||
+                         location.pathname.startsWith('/bookings/');
 
   const dropdownItems = [
     {
@@ -221,14 +231,16 @@ export function Header({ onGetQuote }: HeaderProps) {
       className={`fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100 transition-all duration-300 ${headerShadow}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={`flex justify-between items-center transition-all duration-300 ${headerHeight} ${headerPadding}`}>
-          <div className="flex items-center space-x-4">
+        <div className={`grid grid-cols-12 items-center transition-all duration-300 ${headerHeight} ${headerPadding}`}>
+          {/* Logo - Left */}
+          <div className="col-span-2">
             <Logo />
           </div>
 
-          <div className="hidden md:flex items-center space-x-6">
-            {isMainPage && (
-              <>
+          {/* Navigation - Center */}
+          <div className="hidden md:block col-span-6">
+            {(isMainPage || isAuthPage) && (
+              <div className="flex items-center justify-center space-x-8 w-full">
                 <Link to="/" className={`text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium ${location.pathname === '/' ? 'text-emerald-600' : ''}`}>
                   Home
                 </Link>
@@ -244,58 +256,139 @@ export function Header({ onGetQuote }: HeaderProps) {
                 <Link to="/support" className={`text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium ${location.pathname === '/support' ? 'text-emerald-600' : ''}`}>
                   Contact Us
                 </Link>
-              </>
+              </div>
             )}
             
-            {!isAuthPage && (
-              <>
+            {isDashboardPage && user && (
+              <div className="flex items-center justify-center space-x-8">
+                <Link to="/dashboard" className={`text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium ${location.pathname === '/dashboard' ? 'text-emerald-600' : ''}`}>
+                  Dashboard
+                </Link>
+                <Link to="/bookings" className={`text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium ${location.pathname.startsWith('/bookings') ? 'text-emerald-600' : ''}`}>
+                  My Bookings
+                </Link>
+                <Link to="/profile" className={`text-gray-600 hover:text-emerald-600 transition-colors duration-200 text-sm font-medium ${location.pathname === '/profile' ? 'text-emerald-600' : ''}`}>
+                  Profile
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Actions - Right */}
+          <div className="hidden md:flex items-center justify-end space-x-6 col-span-4">
+            {!isAuthPage ? (
+              <div className="flex items-center space-x-4 min-w-[280px] justify-end">
                 {onGetQuote && (
-                  <button 
-                    onClick={onGetQuote}
-                    className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity duration-200 shadow-lg hover:shadow-emerald-500/25 text-sm font-medium"
-                  >
-                    Get a quote
-                  </button>
+                  <>
+                    <button
+                      onClick={() => navigate('/become-cleaner')}
+                      className={`bg-white border-2 border-emerald-500 text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-50 transition-all duration-200 text-sm font-medium h-[38px] whitespace-nowrap ${
+                        location.pathname === '/become-cleaner' ? 'hidden' : ''
+                      }`}
+                    >
+                      Become a Cleaner
+                    </button>
+                    <button 
+                      onClick={onGetQuote}
+                      className={`bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity duration-200 shadow-lg hover:shadow-emerald-500/25 text-sm font-medium h-[38px] whitespace-nowrap ${
+                        location.pathname === '/quote' || location.pathname === '/booking-confirmation' ? 'hidden' : ''
+                      }`}
+                    >
+                      Get a quote
+                    </button>
+                  </>
                 )}
                 {!onGetQuote && isMainPage && (
+                  <>
+                    <button
+                      onClick={() => navigate('/become-cleaner')}
+                      className={`bg-white border-2 border-emerald-500 text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-50 transition-all duration-200 text-sm font-medium h-[38px] whitespace-nowrap ${
+                        location.pathname === '/become-cleaner' ? 'hidden' : ''
+                      }`}
+                    >
+                      Become a Cleaner
+                    </button>
+                    <button 
+                      onClick={() => navigate('/quote')}
+                      className={`bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity duration-200 shadow-lg hover:shadow-emerald-500/25 text-sm font-medium h-[38px] whitespace-nowrap ${
+                        location.pathname === '/quote' || location.pathname === '/booking-confirmation' ? 'hidden' : ''
+                      }`}
+                    >
+                      Get a quote
+                    </button>
+                  </>
+                )}
+                {isDashboardPage && (
                   <button 
                     onClick={() => navigate('/quote')}
-                    className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity duration-200 shadow-lg hover:shadow-emerald-500/25 text-sm font-medium"
+                    className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity duration-200 shadow-lg hover:shadow-emerald-500/25 text-sm font-medium h-[38px] whitespace-nowrap"
                   >
                     Get a quote
                   </button>
                 )}
                 {renderUserDropdown()}
+              </div>
+            ) : <div className="min-w-[280px]" />}
+          </div>
+
+          <div className="md:hidden flex items-center justify-end col-span-10">
+            {!isAuthPage && (
+              <>
+                {onGetQuote && (
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => navigate('/become-cleaner')}
+                      className={`bg-white border-2 border-emerald-500 text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-50 transition-all duration-200 text-sm font-medium h-[38px] whitespace-nowrap ${
+                        location.pathname === '/become-cleaner' ? 'hidden' : ''
+                      }`}
+                    >
+                      Join Us
+                    </button>
+                    <button
+                      onClick={onGetQuote}
+                      className={`bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity duration-200 text-sm font-medium h-[38px] whitespace-nowrap ${
+                        location.pathname === '/quote' ? 'hidden' : ''
+                      }`}
+                    >
+                      Get a quote
+                    </button>
+                  </div>
+                )}
+                {!onGetQuote && isMainPage && (
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        navigate('/become-cleaner');
+                      }}
+                      className={`bg-white border-2 border-emerald-500 text-emerald-600 px-4 py-2 rounded-lg hover:bg-emerald-50 transition-all duration-200 text-sm font-medium h-[38px] whitespace-nowrap ${
+                        location.pathname === '/become-cleaner' ? 'hidden' : ''
+                      }`}
+                    >
+                      Join Us
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        navigate('/quote');
+                      }}
+                      className={`bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity duration-200 text-sm font-medium h-[38px] whitespace-nowrap ${
+                        location.pathname === '/quote' ? 'hidden' : ''
+                      }`}
+                    >
+                      Get a quote
+                    </button>
+                  </div>
+                )}
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="text-gray-600 hover:text-emerald-600 transition-colors duration-200"
+                >
+                  {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                </button>
               </>
             )}
           </div>
-
-          {!isAuthPage && (
-            <div className="md:hidden flex items-center space-x-3">
-              {onGetQuote && (
-                <button
-                  onClick={onGetQuote}
-                  className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity duration-200 text-sm font-medium"
-                >
-                  Get a quote
-                </button>
-              )}
-              {!onGetQuote && isMainPage && (
-                <button
-                  onClick={() => navigate('/quote')}
-                  className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity duration-200 text-sm font-medium"
-                >
-                  Get a quote
-                </button>
-              )}
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="text-gray-600 hover:text-emerald-600 transition-colors duration-200"
-              >
-                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -323,6 +416,29 @@ export function Header({ onGetQuote }: HeaderProps) {
                 <Link to="/support" className={`w-full text-center px-3 py-2 text-base font-medium ${location.pathname === '/support' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'} rounded-lg`}>
                   Contact Us
                 </Link>
+              </div>
+            )}
+            
+            {isDashboardPage && user && (
+              <div className="flex flex-col items-center space-y-2 mb-4">
+                <Link to="/dashboard" className={`w-full text-center px-3 py-2 text-base font-medium ${location.pathname === '/dashboard' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'} rounded-lg`}>
+                  Dashboard
+                </Link>
+                <Link to="/bookings" className={`w-full text-center px-3 py-2 text-base font-medium ${location.pathname === '/bookings' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'} rounded-lg`}>
+                  My Bookings
+                </Link>
+                <Link to="/profile" className={`w-full text-center px-3 py-2 text-base font-medium ${location.pathname === '/profile' ? 'text-emerald-600 bg-emerald-50' : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'} rounded-lg`}>
+                  Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    navigate('/quote');
+                  }}
+                  className="w-full text-center px-3 py-2 text-base font-medium bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-lg hover:opacity-90 transition-opacity duration-200"
+                >
+                  Get a quote
+                </button>
               </div>
             )}
             
