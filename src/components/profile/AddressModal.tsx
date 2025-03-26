@@ -42,6 +42,14 @@ export function AddressModal({ isOpen, onClose, onSave, address, title }: Addres
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
+    // Reset form data to initial state
+    setFormData({
+      label: '',
+      street: '',
+      city: '',
+      postcode: '',
+      isDefault: false
+    });
     onClose();
   };
 

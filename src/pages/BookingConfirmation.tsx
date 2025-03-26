@@ -349,8 +349,19 @@ export function BookingConfirmation() {
   // Process the booking
   const processBooking = async () => {
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Calculate prices
+      const basePrice = calculateBasePrice(quoteData);
+      const extraServicesPrice = calculateExtraServicesPrice(quoteData);
+      const { discountPercentage, discountAmount } = calculateDiscount(quoteData, basePrice + extraServicesPrice);
+      const totalPrice = (basePrice + extraServicesPrice) - discountAmount;
+      
+      // Format extra services price details
+      const extraServicesPriceDetails = {};
+      if (quoteData.extraServices) {
+        quoteData.extraServices.forEach(service => {
+          extraServicesPriceDetails[service] = getExtraServicePrice(service);
+        });
+      }
       
       // Create a booking in the database if user is authenticated
       const { data: sessionData } = await supabase.auth.getSession();
@@ -376,7 +387,20 @@ export function BookingConfirmation() {
             special_requirements: quoteData.specialRequirements,
             has_pets: quoteData.hasPets,
             pet_details: quoteData.petDetails,
-            access_instructions: quoteData.accessInstructions
+            access_instructions: quoteData.accessInstructions,
+            base_price: basePrice,
+            extra_services_price: extraServicesPriceDetails,
+            discount_percentage: discountPercentage,
+            discount_amount: discountAmount,
+            total_price: totalPrice,
+            payment_status: 'completed',
+            payment_method: 'credit_card',
+            payment_details: {
+              last4: paymentForm.cardNumber.slice(-4),
+              brand: 'visa', // Simplified for demo
+              exp_month: parseInt(paymentForm.expiry.split('/')[0]),
+              exp_year: parseInt('20' + paymentForm.expiry.split('/')[1])
+            }
           };
           
           // Insert the booking
@@ -402,6 +426,83 @@ export function BookingConfirmation() {
       setError('Failed to process payment. Please try again.');
       setIsProcessing(false);
     }
+  };
+
+  // Calculate base price based on service type and areas
+  const calculateBasePrice = (data: QuoteFormData): number => {
+    let price = 0;
+    
+    // Base price for each service type
+    const servicePrices = {
+      regular_home: 30,
+      deep_cleaning: 45,
+      spring_cleaning: 50,
+      end_of_tenancy: 60,
+      move_in_out: 55,
+      post_renovation: 65,
+      office_cleaning: 40,
+      disinfection: 35,
+      retail_cleaning: 45
+    };
+
+    // Add service prices
+    data.services?.forEach(service => {
+      price += servicePrices[service as keyof typeof servicePrices] || 0;
+    });
+
+    // Add area-based costs
+    if (data.residentialAreas && Object.keys(data.residentialAreas).length > 0) {
+      price += Object.values(data.residentialAreas).reduce((sum, count) => sum + (count * 15), 0);
+    }
+
+    if (data.commercialAreas && Object.keys(data.commercialAreas).length > 0) {
+      price += Object.values(data.commercialAreas).reduce((sum, count) => sum + (count * 20), 0);
+    }
+
+    return price;
+  };
+
+  // Calculate extra services price
+  const calculateExtraServicesPrice = (data: QuoteFormData): number => {
+    return data.extraServices?.reduce((total, service) => 
+      total + getExtraServicePrice(service), 0
+    ) || 0;
+  };
+
+  // Get price for a single extra service
+  const getExtraServicePrice = (service: string): number => {
+    const prices = {
+      ironing: 15,
+      laundry: 20,
+      fridge: 25,
+      oven: 30,
+      windows: 20
+    };
+    return prices[service as keyof typeof prices] || 0;
+  };
+
+  // Calculate discount based on frequency
+  const calculateDiscount = (data: QuoteFormData, subtotal: number): { discountPercentage: number, discountAmount: number } => {
+    let discountPercentage = 0;
+
+    switch (data.frequency) {
+      case 'weekly':
+        discountPercentage = 15;
+        break;
+      case 'biweekly':
+        discountPercentage = 10;
+        break;
+      case 'monthly':
+        discountPercentage = 5;
+        break;
+    }
+
+    const discountAmount = (subtotal * discountPercentage) / 100;
+
+    return {
+      discountPercentage,
+      discountAmount
+    };
   };
 
   // Handle form submission

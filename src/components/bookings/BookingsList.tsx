@@ -81,7 +81,10 @@ export function BookingsList({ bookings, type, onCountChange }: BookingsListProp
       // Update the booking status to cancelled
       const { error: updateError } = await supabase
         .from('bookings')
-        .update({ status: 'cancelled' })
+        .update({ 
+          status: 'cancelled',
+          cancelled_at: new Date().toISOString()
+        })
         .eq('id', bookingId);
 
       if (updateError) throw updateError;

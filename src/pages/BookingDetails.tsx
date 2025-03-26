@@ -333,24 +333,33 @@ export function BookingDetails() {
                   Price Details
                 </h2>
                 <div className="space-y-3">
-                  {/* Base Price */}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Base Service</span>
-                    <span className="font-medium text-gray-900">£60.00</span>
-                  </div>
-                  
-                  {/* Extra Services */}
-                  {booking.extra_services && booking.extra_services.length > 0 && (
+                  {booking.base_price && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Base Service</span>
+                      <span className="font-medium text-gray-900">£{booking.base_price.toFixed(2)}</span>
+                    </div>
+                  )}
+
+                  {/* Extra Services with prices */}
+                  {booking.extra_services_price && Object.keys(booking.extra_services_price).length > 0 && (
                     <>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Extra Services</span>
-                        <span className="font-medium text-gray-900">£25.00</span>
-                      </div>
+                      {(() => {
+                        const totalExtraServices = Object.values(booking.extra_services_price as Record<string, number>)
+                          .reduce((sum, price) => sum + (price || 0), 0);
+                        return (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Extra Services</span>
+                            <span className="font-medium text-gray-900">
+                              £{totalExtraServices.toFixed(2)}
+                            </span>
+                          </div>
+                        );
+                      })()}
                       <div className="pl-4 space-y-1">
-                        {booking.extra_services.map((service, index) => (
-                          <div key={index} className="flex justify-between text-xs text-gray-500">
+                        {Object.entries(booking.extra_services_price as Record<string, number>).map(([service, price]) => (
+                          <div key={service} className="flex justify-between text-xs text-gray-500">
                             <span>{service.charAt(0).toUpperCase() + service.slice(1)}</span>
-                            <span>£5.00</span>
+                            <span>£{(price || 0).toFixed(2)}</span>
                           </div>
                         ))}
                       </div>
@@ -358,10 +367,10 @@ export function BookingDetails() {
                   )}
                   
                   {/* Frequency Discount */}
-                  {booking.frequency && booking.frequency !== 'oneTime' && (
+                  {booking.discount_amount && booking.discount_amount > 0 && booking.discount_percentage && (
                     <div className="flex justify-between text-sm text-emerald-600">
-                      <span>{booking.frequency.charAt(0).toUpperCase() + booking.frequency.slice(1)} Discount</span>
-                      <span>-£8.50</span>
+                      <span>Frequency Discount ({booking.discount_percentage}%)</span>
+                      <span>-£{booking.discount_amount.toFixed(2)}</span>
                     </div>
                   )}
                   
@@ -369,7 +378,9 @@ export function BookingDetails() {
                   <div className="pt-3 border-t border-gray-100">
                     <div className="flex justify-between text-base">
                       <span className="font-semibold text-gray-900">Total</span>
-                      <span className="font-semibold text-emerald-600">£76.50</span>
+                      <span className="font-semibold text-emerald-600">
+                        £{(booking.total_price || 0).toFixed(2)}
+                      </span>
                     </div>
                     {booking.frequency && booking.frequency !== 'oneTime' && (
                       <p className="text-xs text-gray-500 mt-1 text-right">

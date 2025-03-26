@@ -23,8 +23,8 @@ export function Profile() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 pt-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="min-h-screen bg-gray-50 pt-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center text-gray-600 hover:text-emerald-600 transition-colors duration-200 mb-6"

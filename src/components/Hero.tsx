@@ -208,7 +208,7 @@ export function Hero({ postcode, setPostcode, onGetQuote }: HeroProps) {
                   </div>
                 </div>
                 {error && (
-                  <div className="mt-2 flex items-center justify-center text-red-600 text-sm">
+                  <div className="mt-2 flex items-center justify-center bg-red-50/90 backdrop-blur-sm text-red-600 text-sm px-4 py-2 rounded-lg border border-red-200">
                     <AlertCircle className="w-4 h-4 mr-1" />
                     {error}
                   </div>

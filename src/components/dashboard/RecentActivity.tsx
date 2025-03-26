@@ -15,16 +15,17 @@ export function RecentActivity() {
     
     // Get all bookings sorted by date
     const sortedBookings = [...bookings].sort((a, b) => {
-      // Sort by created_at first, then by date
-      const createdAtA = new Date(a.created_at).getTime();
-      const createdAtB = new Date(b.created_at).getTime();
-      if (createdAtA !== createdAtB) {
-        return createdAtB - createdAtA; // Most recent created first
+      // Get the most recent activity timestamp for each booking
+      const getActivityTime = (booking: any) => {
+        if (booking.cancelled_at) {
+          return new Date(booking.cancelled_at).getTime();
+        }
+        return new Date(booking.created_at).getTime();
       }
-      // If created at same time, sort by date
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      return dateB - dateA;
+      
+      const timeA = getActivityTime(a);
+      const timeB = getActivityTime(b);
+      return timeB - timeA; // Most recent activity first
     });
     
     // Get the 5 most recent bookings
