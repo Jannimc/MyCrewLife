@@ -276,7 +276,6 @@ export function Header({ onGetQuote }: HeaderProps) {
 
           {/* Actions - Right */}
           <div className="hidden md:flex items-center justify-end space-x-6 col-span-4">
-            {!isAuthPage ? (
               <div className="flex items-center space-x-4 min-w-[280px] justify-end">
                 {onGetQuote && (
                   <>
@@ -328,11 +327,9 @@ export function Header({ onGetQuote }: HeaderProps) {
                 )}
                 {renderUserDropdown()}
               </div>
-            ) : <div className="min-w-[280px]" />}
           </div>
 
           <div className="md:hidden flex items-center justify-end col-span-10">
-            {!isAuthPage && (
               <>
                 {onGetQuote && (
                   <div className="flex items-center space-x-2">
@@ -387,7 +384,6 @@ export function Header({ onGetQuote }: HeaderProps) {
                   {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                 </button>
               </>
-            )}
           </div>
         </div>
       </div>

@@ -30,6 +30,7 @@ export function BecomeACleaner() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
@@ -70,12 +71,6 @@ export function BecomeACleaner() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    let error = null;
-    
-    if (!user) {
-      navigate('/login', { state: { from: '/become-cleaner' } });
-      return;
-    }
 
     try {
       // Validate required fields
@@ -90,7 +85,7 @@ export function BecomeACleaner() {
       const { error: submitError } = await supabase
         .from('cleaner_applications')
         .insert({
-          user_id: user?.id,
+          user_id: user?.id || null,
           first_name: formData.firstName,
           last_name: formData.lastName,
           email: formData.email,
@@ -111,6 +106,8 @@ export function BecomeACleaner() {
       if (submitError) throw submitError;
 
       setSubmitted(true);
+      // Scroll to top of page
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error('Error submitting form:', error);
       alert(error instanceof Error ? error.message : 'Failed to submit application. Please try again.');
