@@ -161,7 +161,7 @@ export function RecentActivity() {
                   <div className="flex items-center justify-end">
                     {booking.status === 'upcoming' ? (
                       <button 
-                        onClick={() => navigate('/bookings')}
+                        onClick={() => navigate(`/bookings/${booking.id}`)}
                         className="px-4 py-2 text-sm font-medium text-emerald-600 hover:text-emerald-700"
                       > 
                         View Details

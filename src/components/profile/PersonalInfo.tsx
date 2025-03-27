@@ -13,8 +13,8 @@ interface PersonalInfoProps {
 export function PersonalInfo({ user, isEditing, setIsEditing }: PersonalInfoProps) {
   const { profile, loading } = useUserData();
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    firstName: profile?.first_name || '',
+    lastName: profile?.last_name || '',
     email: '',
     phone: ''
   });

@@ -104,7 +104,7 @@ export function AuthForm({
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
           required
-          error={error}
+          error={error?.toLowerCase().includes('email') ? error : undefined}
         />
 
         <Input
@@ -114,6 +114,7 @@ export function AuthForm({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
+          error={!error?.toLowerCase().includes('email') && !error?.toLowerCase().includes('passwords do not match') ? error : undefined}
           required
         />
 
@@ -125,6 +126,7 @@ export function AuthForm({
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="••••••••"
+            error={error?.toLowerCase().includes('passwords do not match') ? error : undefined}
             required
           />
         )}

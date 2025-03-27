@@ -65,7 +65,8 @@ export function Checkout() {
       
       return () => clearTimeout(timer);
     } else if (isComplete && redirectCountdown === 0) {
-      navigate('/dashboard');
+      // Redirect to homepage for guests, dashboard for logged in users
+      navigate(user ? '/dashboard' : '/');
     }
   }, [isComplete, redirectCountdown, navigate]);
 
@@ -119,70 +120,71 @@ export function Checkout() {
       // Calculate discount
       const { discountPercentage, discountAmount } = calculateDiscount(quoteData, subtotalPrice);
       
-      // Calculate final total
       const totalPrice = subtotalPrice - discountAmount;
       
       // Create a booking in the database if user is authenticated
       const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData.session?.user) {
-        try {
-          // Format the booking data
-          const bookingData = {
-            user_id: sessionData.session.user.id,
-            service_type: Array.isArray(quoteData.services) ? quoteData.services.join(', ') : 'Regular Cleaning',
-            date: quoteData.preferredDay,
-            time: timeSlot || '9:00 AM',
-            address: `${addressForm.street}, ${addressForm.city}, ${addressForm.postcode}`,
-            cleaner: 'Awaiting Assignment',
-            status: 'upcoming',
-            duration: '3 hours',
-            property_type: quoteData.propertyType,
-            residential_areas: quoteData.residentialAreas,
-            commercial_areas: quoteData.commercialAreas,
-            other_areas: quoteData.otherAreas,
-            custom_area_name: quoteData.customAreaName,
-            extra_services: quoteData.extraServices,
-            frequency: quoteData.frequency,
-            special_requirements: quoteData.specialRequirements,
-            has_pets: quoteData.hasPets,
-            pet_details: quoteData.petDetails,
-            access_instructions: quoteData.accessInstructions,
-            base_price: basePrice,
-            service_prices: calculateServicePrices(quoteData),
-            area_charges: areaCharges.details,
-            extra_services_price: extraServicesPrice.details,
-            subtotal_price: subtotalPrice,
-            discount_percentage: discountPercentage,
-            discount_amount: discountAmount,
-            total_price: totalPrice,
-            pricing_context: {
-              currency: 'GBP',
-              frequency: quoteData.frequency || 'one-time',
-              timestamp: new Date().toISOString()
-            }
-          };
-          
-          // Insert the booking
-          const { error: bookingError } = await supabase
-            .from('bookings')
-            .insert([bookingData]);
-            
-          if (bookingError) {
-            console.error('Error creating booking:', bookingError);
-            // Continue anyway - we'll show success to the user
+      
+      try {
+        // Format the booking data
+        const bookingData = {
+          user_id: sessionData.session?.user?.id || null,
+          service_type: Array.isArray(quoteData.services) ? quoteData.services.join(', ') : 'Regular Cleaning',
+          date: quoteData.preferredDay,
+          time: timeSlot || '9:00 AM',
+          address: `${addressForm.street}, ${addressForm.city}, ${addressForm.postcode}`,
+          cleaner: 'Awaiting Assignment',
+          status: 'upcoming',
+          duration: '3 hours',
+          property_type: quoteData.propertyType,
+          residential_areas: quoteData.residentialAreas,
+          commercial_areas: quoteData.commercialAreas,
+          other_areas: quoteData.otherAreas,
+          custom_area_name: quoteData.customAreaName,
+          extra_services: quoteData.extraServices,
+          frequency: quoteData.frequency,
+          special_requirements: quoteData.specialRequirements,
+          has_pets: quoteData.hasPets,
+          pet_details: quoteData.petDetails,
+          access_instructions: quoteData.accessInstructions,
+          base_price: basePrice,
+          service_prices: calculateServicePrices(quoteData),
+          area_charges: areaCharges.details,
+          extra_services_price: extraServicesPrice.details,
+          subtotal_price: subtotalPrice,
+          discount_percentage: discountPercentage,
+          discount_amount: discountAmount,
+          total_price: totalPrice,
+          is_guest: !sessionData.session?.user,
+          guest_name: authForm.name || null,
+          guest_email: authForm.email || null,
+          guest_phone: authForm.phone || null,
+          pricing_context: {
+            currency: 'GBP',
+            frequency: quoteData.frequency || 'one-time',
+            timestamp: new Date().toISOString()
           }
-        } catch (dbError) {
-          console.error('Database error:', dbError);
-          // Continue anyway - we'll show success to the user
+        };
+        
+        // Insert the booking
+        const { error: bookingError } = await supabase
+          .from('bookings')
+          .insert([bookingData]);
+          
+        if (bookingError) {
+          throw bookingError;
         }
+      } catch (dbError) {
+        console.error('Database error:', dbError);
+        throw new Error('Failed to create booking. Please try again.');
       }
       
       // Show success state
       setIsComplete(true);
-      setIsProcessing(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       setError('Failed to process booking. Please try again.');
+    } finally {
       setIsProcessing(false);
     }
   };
@@ -314,42 +316,44 @@ export function Checkout() {
       return;
     }
     
-    // Save address if requested
-    if (addressForm.saveAddress && user) {
-      try {
-        // Check if this is the first address (will be default)
-        const { data: existingAddresses } = await supabase
-          .from('addresses')
-          .select('id')
-          .eq('user_id', user.id);
-        
-        const isFirstAddress = !existingAddresses || existingAddresses.length === 0;
-        
-        // Save the address
-        const { error: addressError } = await supabase
-          .from('addresses')
-          .insert({
-            user_id: user.id,
-            label: 'Home',
-            street: addressForm.street,
-            city: addressForm.city,
-            postcode: addressForm.postcode,
-            is_default: isFirstAddress
-          });
-          
-        if (addressError) throw addressError;
-      } catch (err) {
-        console.error('Error saving address:', err);
-      }
-    }
-    
     // If user is logged in, process booking
     if (user) {
-      setIsProcessing(true);
+      // Save address if requested
+      if (addressForm.saveAddress) {
+        try {
+          // Check if this is the first address (will be default)
+          const { data: existingAddresses } = await supabase
+            .from('addresses')
+            .select('id')
+            .eq('user_id', user.id);
+          
+          const isFirstAddress = !existingAddresses || existingAddresses.length === 0;
+          
+          // Save the address
+          const { error: addressError } = await supabase
+            .from('addresses')
+            .insert({
+              user_id: user.id,
+              label: 'Home',
+              street: addressForm.street,
+              city: addressForm.city,
+              postcode: addressForm.postcode,
+              is_default: isFirstAddress
+            });
+            
+          if (addressError) throw addressError;
+        } catch (err) {
+          console.error('Error saving address:', err);
+        }
+      }
+      
       processBooking();
     } else {
       // If not logged in, show auth form
-      if (activeTab === 'login') {
+      if (activeTab === 'guest') {
+        // Process as guest booking
+        processBooking();
+      } else if (activeTab === 'login') {
         handleLogin(e);
       } else {
         handleSignup(e);
@@ -516,8 +520,9 @@ export function Checkout() {
           {/* Success message */}
           {isComplete && (
             <SuccessMessage 
+              isGuest={!user}
               redirectCountdown={redirectCountdown}
-              onNavigate={() => navigate('/dashboard')}
+              onNavigate={() => navigate(user ? '/dashboard' : '/')}
             />
           )}
           
