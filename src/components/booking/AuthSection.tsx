@@ -1,5 +1,5 @@
 import React from 'react';
-import { User } from 'lucide-react';
+import { User, AlertCircle } from 'lucide-react';
 
 interface AuthFormData {
   email: string;
@@ -18,6 +18,7 @@ interface AuthSectionProps {
   errors: Record<string, string>;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isProcessing: boolean;
+  error?: string;
 }
 
 export function AuthSection({
@@ -26,7 +27,8 @@ export function AuthSection({
   formData,
   errors,
   onChange,
-  isProcessing
+  isProcessing,
+  error
 }: AuthSectionProps) {
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
@@ -245,6 +247,16 @@ export function AuthSection({
             )}
           </div>
         )}
+        
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start">
+              <AlertCircle className="h-5 w-5 text-red-500 mr-2 mt-0.5" />
+              <p className="text-red-700 text-sm">{error}</p>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 
@@ -104,7 +104,6 @@ export function AuthForm({
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
           required
-          error={error?.toLowerCase().includes('email') ? error : undefined}
         />
 
         <Input
@@ -114,7 +113,6 @@ export function AuthForm({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
-          error={!error?.toLowerCase().includes('email') && !error?.toLowerCase().includes('passwords do not match') ? error : undefined}
           required
         />
 
@@ -126,7 +124,6 @@ export function AuthForm({
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="••••••••"
-            error={error?.toLowerCase().includes('passwords do not match') ? error : undefined}
             required
           />
         )}
@@ -148,6 +145,15 @@ export function AuthForm({
               <Link to="/forgot-password" className="font-medium text-emerald-600 hover:text-emerald-700">
                 Forgot password?
               </Link>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-start">
+              <AlertCircle className="h-5 w-5 text-red-500 mr-2 mt-0.5" />
+              <p className="text-red-700 text-sm">{error}</p>
             </div>
           </div>
         )}
