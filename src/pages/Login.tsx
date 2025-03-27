@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { MainLayout } from '../components/layout/MainLayout';
+import { PageLayout } from '../components/layout/PageLayout';
 import { AuthForm } from '../components/auth/AuthForm';
 import { useAuth } from '../hooks/useAuth';
 
@@ -63,16 +64,18 @@ export function Login() {
 
   return (
     <MainLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <button
-          onClick={() => navigate(-1)}
-          className="mt-8 flex items-center text-gray-600 hover:text-emerald-600 transition-colors duration-200"
-        >
-          <ArrowLeft className="h-5 w-5 mr-2" />
-          <span>Back</span>
-        </button>
-        
-        <div className="flex-1 flex items-center justify-center py-12">
+      <div className="min-h-screen bg-gray-50 pt-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Back button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center text-gray-600 hover:text-emerald-600 transition-colors duration-200 mb-6"
+          >
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            <span>Back</span>
+          </button>
+
+        <div className="flex-1 flex items-center justify-center">
           <div className="max-w-md w-full">
             {/* Success message */}
             {successMessage && (
@@ -93,6 +96,7 @@ export function Login() {
               onGoogleClick={handleGoogleSignIn}
             />
           </div>
+        </div>
         </div>
       </div>
     </MainLayout>

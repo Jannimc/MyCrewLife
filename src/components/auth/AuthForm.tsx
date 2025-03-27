@@ -11,6 +11,12 @@ interface AuthFormProps {
   setEmail: (value: string) => void;
   password: string;
   setPassword: (value: string) => void;
+  firstName?: string;
+  setFirstName?: (value: string) => void;
+  lastName?: string;
+  setLastName?: (value: string) => void;
+  phone?: string;
+  setPhone?: (value: string) => void;
   confirmPassword?: string;
   setConfirmPassword?: (value: string) => void;
   error?: string;
@@ -28,6 +34,12 @@ export function AuthForm({
   setEmail,
   password,
   setPassword,
+  firstName,
+  setFirstName,
+  lastName,
+  setLastName,
+  phone,
+  setPhone,
   confirmPassword,
   setConfirmPassword,
   error,
@@ -52,6 +64,38 @@ export function AuthForm({
 
       {/* Form */}
       <form onSubmit={onSubmit} className="space-y-6">
+        {type === 'signup' && (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="First Name"
+                type="text"
+                value={firstName || ''}
+                onChange={(e) => setFirstName?.(e.target.value)}
+                placeholder="John"
+                required
+              />
+              <Input
+                label="Last Name"
+                type="text"
+                value={lastName || ''}
+                onChange={(e) => setLastName?.(e.target.value)}
+                placeholder="Doe"
+                required
+              />
+            </div>
+            
+            <Input
+              label="Phone Number"
+              type="tel"
+              value={phone || ''}
+              onChange={(e) => setPhone?.(e.target.value)}
+              placeholder="+44 123 456 7890"
+              required
+            />
+          </>
+        )}
+
         <Input
           label="Email address"
           type="email"

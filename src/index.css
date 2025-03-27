@@ -46,43 +46,6 @@
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background-color: #cbd5e1;
   }
-
-  .react-datepicker {
-    @apply w-full border-0 font-sans bg-white rounded-xl;
-  }
-
-  
-  .react-datepicker__month-container {
-    @apply w-full flex flex-col;
-  }
-
-  .react-datepicker__month {
-    @apply p-0 flex flex-col;
-  }
-
-  .react-datepicker__day-names {
-    @apply grid grid-cols-7 gap-0 px-4 py-4 border-b border-gray-100;
-  }
-
-  .react-datepicker__day-name {
-    @apply w-full text-center text-sm font-medium text-gray-600;
-  }
-
-  .react-datepicker__week {
-    @apply grid grid-cols-7 gap-0 px-4;
-  }
-  
-  .react-datepicker__day {
-    @apply w-full aspect-square flex items-center justify-center text-sm rounded-lg hover:bg-emerald-50 transition-colors duration-200;
-  }
-  
-  .react-datepicker__day--selected {
-    @apply bg-emerald-500 text-white hover:bg-emerald-600;
-  }
-  
-  .react-datepicker__day--disabled {
-    @apply text-gray-300 cursor-not-allowed hover:bg-transparent;
-  }
 }
 
 @keyframes fadeIn {
@@ -118,4 +81,53 @@
   100% { 
     transform: translate(0px, 0px) scale(1); 
   }
+}
+
+/* Custom DatePicker Styles */
+.react-datepicker {
+  @apply w-full border-0 font-sans;
+}
+
+.react-datepicker__month-container {
+  @apply w-full;
+}
+
+.react-datepicker__month {
+  @apply p-0;
+}
+
+.react-datepicker__day-names {
+  @apply flex justify-between px-2 py-4 border-b border-gray-100;
+}
+
+.react-datepicker__day-name {
+  @apply w-10 text-sm font-medium text-gray-600;
+} 
+
+.react-datepicker__week {
+  @apply flex justify-between px-2;
+}
+
+.react-datepicker__day {
+  @apply w-10 h-10 m-0 text-sm leading-10 rounded-lg hover:bg-emerald-50 transition-colors duration-200;
+}
+
+.react-datepicker__day--selected {
+  @apply bg-emerald-500 text-white hover:bg-emerald-600;
+}
+
+.react-datepicker__day--disabled {
+  @apply text-gray-300 cursor-not-allowed hover:bg-transparent;
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
 }

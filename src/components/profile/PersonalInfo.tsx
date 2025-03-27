@@ -13,7 +13,8 @@ interface PersonalInfoProps {
 export function PersonalInfo({ user, isEditing, setIsEditing }: PersonalInfoProps) {
   const { profile, loading } = useUserData();
   const [formData, setFormData] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: ''
   });
@@ -23,7 +24,8 @@ export function PersonalInfo({ user, isEditing, setIsEditing }: PersonalInfoProp
   useEffect(() => {
     if (profile) {
       setFormData({
-        fullName: profile.full_name || '',
+        firstName: profile.first_name || '',
+        lastName: profile.last_name || '',
         email: user.email || '',
         phone: profile.phone || ''
       });
@@ -40,7 +42,8 @@ export function PersonalInfo({ user, isEditing, setIsEditing }: PersonalInfoProp
       const { error: updateError } = await supabase.auth.updateUser({
         email: formData.email,
         data: {
-          full_name: formData.fullName
+          first_name: formData.firstName,
+          last_name: formData.lastName
         }
       });
 
@@ -50,7 +53,8 @@ export function PersonalInfo({ user, isEditing, setIsEditing }: PersonalInfoProp
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
-          full_name: formData.fullName,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
           phone: formData.phone,
           updated_at: new Date().toISOString()
         })
@@ -112,20 +116,41 @@ export function PersonalInfo({ user, isEditing, setIsEditing }: PersonalInfoProp
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <UserIcon className="h-5 w-5 text-gray-400" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <UserIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    disabled={!isEditing || isLoading}
+                    className={`block w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-200 ${
+                      isEditing ? 'border-gray-300' : 'border-transparent bg-gray-50'
+                    }`}
+                  />
+                </div>
               </div>
-              <input
-                type="text"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                disabled={!isEditing || isLoading}
-                className={`block w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-200 ${
-                  isEditing ? 'border-gray-300' : 'border-transparent bg-gray-50'
-                }`}
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <UserIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    disabled={!isEditing || isLoading}
+                    className={`block w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors duration-200 ${
+                      isEditing ? 'border-gray-300' : 'border-transparent bg-gray-50'
+                    }`}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 

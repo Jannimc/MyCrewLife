@@ -20,15 +20,18 @@ export function useAuth() {
     }
   }, [signIn]);
 
-  // Handle sign up with email and password
-  const handleSignUp = useCallback(async (email: string, password: string) => {
-    try {
-      await signUp(email, password);
-      return true;
-    } catch (error) {
-      throw error;
-    }
-  }, [signUp]);
+const handleSignUp = useCallback(
+  async (
+    email: string,
+    password: string,
+    options?: { data?: Record<string, any> }
+  ) => {
+    console.log("useAuth.ts options:", options); // ✅ Add this
+    await signUp(email, password, options);
+  },
+  [signUp]
+);
+
 
   // Handle sign out
   const handleSignOut = useCallback(async () => {

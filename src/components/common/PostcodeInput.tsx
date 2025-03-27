@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Home, Building, Star } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
+import { debounce } from '../../utils/debounce.ts';
 
 interface Address {
   id: string;
@@ -10,6 +11,12 @@ interface Address {
   city: string;
   postcode: string;
   is_default: boolean;
+}
+
+interface Suggestion {
+  postcode: string;
+  address: string;
+  district: string;
 }
 
 interface PostcodeInputProps {
@@ -21,6 +28,8 @@ interface PostcodeInputProps {
 export function PostcodeInput({ value, onChange, onValidate, error }: PostcodeInputProps) {
   const { user } = useAuth();
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [filteredAddresses, setFilteredAddresses] = useState<Address[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
@@ -28,9 +37,51 @@ export function PostcodeInput({ value, onChange, onValidate, error }: PostcodeIn
   const [validationError, setValidationError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [dropdownHeight, setDropdownHeight] = useState('250px');
 
   // UK postcode regex pattern
   const postcodeRegex = /^[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}$/i;
+
+  // Input validation function
+  const validateInput = (input: string): boolean => {
+    // Check for inappropriate content
+    const blockedTerms = ['offensive', 'inappropriate']; // Add terms to block
+    return !blockedTerms.some(term => input.toLowerCase().includes(term));
+  };
+
+  // Debounced function to fetch address suggestions
+  const fetchSuggestions = debounce(async (input: string) => {
+    if (input.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(`https://api.postcodes.io/postcodes/${input}/autocomplete`);
+      const data = await response.json();
+      
+      if (data.result) {
+        // Fetch full details for each postcode
+        const detailsPromises = data.result.map(async (postcode: string) => {
+          const detailsResponse = await fetch(`https://api.postcodes.io/postcodes/${postcode}`);
+          const details = await detailsResponse.json();
+          return {
+            postcode,
+            address: `${details.result.admin_district}, ${details.result.admin_ward}`,
+            district: details.result.admin_district
+          };
+        });
+
+        const suggestions = await Promise.all(detailsPromises);
+        setSuggestions(suggestions);
+      } else {
+        setSuggestions([]);
+      }
+    } catch (err) {
+      console.error('Error fetching suggestions:', err);
+      setSuggestions([]);
+    }
+  }, 300);
 
   // Fetch user's saved addresses
   useEffect(() => {
@@ -78,9 +129,27 @@ export function PostcodeInput({ value, onChange, onValidate, error }: PostcodeIn
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value.toUpperCase();
+    
+    // Just update the value and filter addresses, no validation
     onChange(newValue);
-    setShowDropdown(false);
-    setValidationError(null);
+    
+    // Filter saved addresses
+    if (addresses.length > 0) {
+      const filtered = addresses.filter(addr => 
+        addr.postcode.toLowerCase().includes(newValue.toLowerCase()) ||
+        addr.street.toLowerCase().includes(newValue.toLowerCase())
+      );
+      setFilteredAddresses(filtered);
+    }
+    
+    // Fetch suggestions
+    if (newValue) {
+      setShowDropdown(true);
+      fetchSuggestions(newValue);
+    } else {
+      setShowDropdown(false);
+      setSuggestions([]);
+    }
   };
 
   const handleAddressSelect = (address: Address) => {
@@ -112,14 +181,6 @@ export function PostcodeInput({ value, onChange, onValidate, error }: PostcodeIn
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value.toUpperCase();
     onChange(newValue);
-    setIsValid(null);
-
-    // Only validate if the postcode matches the format
-    if (postcodeRegex.test(newValue)) {
-      validatePostcode(newValue);
-    } else if (newValue) {
-      onValidate?.();
-    }
   };
 
   const getAddressIcon = (label: string) => {
@@ -159,16 +220,17 @@ export function PostcodeInput({ value, onChange, onValidate, error }: PostcodeIn
       )}
 
       {/* Addresses Dropdown */}
-      {showDropdown && addresses.length > 0 && (
+      {showDropdown && (filteredAddresses.length > 0 || suggestions.length > 0) && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-2 animate-fade-in max-h-[250px]"
+          className="absolute z-50 w-full mt-2 animate-fade-in max-h-[240px]"
         >
           <div className="relative">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg blur opacity-25"></div>
-            <div className="relative bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden max-h-[250px] overflow-y-auto scrollbar-thin">
+            <div className="relative bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden max-h-[240px] overflow-y-auto scrollbar-thin">
               <div className="py-2 px-0.5">
-                {addresses.map((address) => (
+                {/* Saved Addresses */}
+                {filteredAddresses.map((address) => (
                   <button
                     key={address.id}
                     onClick={() => handleAddressSelect(address)}
@@ -186,6 +248,27 @@ export function PostcodeInput({ value, onChange, onValidate, error }: PostcodeIn
                     {address.is_default && (
                       <Star className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                     )}
+                  </button>
+                ))}
+                
+                {/* Live Suggestions */}
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.postcode}
+                    onClick={() => {
+                      onChange(suggestion.postcode);
+                      setShowDropdown(false);
+                      validatePostcode(suggestion.postcode);
+                    }}
+                    className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-3 group transition-colors duration-200"
+                  >
+                    <div className="text-gray-400 group-hover:text-emerald-500 transition-colors duration-200">
+                      <MapPin className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 truncate">
+                      <span className="text-sm font-medium text-gray-900">{suggestion.postcode}</span>
+                      <p className="text-sm text-gray-500 truncate">{suggestion.address}</p>
+                    </div>
                   </button>
                 ))}
               </div>

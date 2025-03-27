@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { User, Calendar, CreditCard, LifeBuoy, ArrowRight } from 'lucide-react';
+import { User, Calendar, LifeBuoy, ArrowRight } from 'lucide-react';
 
 export function QuickLinks() {
   const links = [
@@ -15,12 +15,6 @@ export function QuickLinks() {
       icon: Calendar,
       title: 'Bookings',
       description: 'Manage your appointments'
-    },
-    {
-      to: '/payment-methods',
-      icon: CreditCard,
-      title: 'Payment Methods',
-      description: 'Update payment information'
     },
     {
       to: '/support',

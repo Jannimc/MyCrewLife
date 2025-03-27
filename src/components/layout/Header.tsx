@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, X, User, ChevronDown, CreditCard, Calendar, LifeBuoy, LogOut, Settings, LayoutDashboard } from 'lucide-react';
+import { Menu, X, User, ChevronDown, Calendar, LifeBuoy, LogOut, Settings, LayoutDashboard } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Logo } from '../common/Logo';
@@ -81,13 +81,12 @@ export function Header({ onGetQuote }: HeaderProps) {
                      location.pathname === '/support' ||
                      location.pathname === '/become-cleaner' ||
                      location.pathname === '/quote' || 
-                     location.pathname === '/booking-confirmation' ||
+                    location.pathname === '/checkout' ||
                      isAuthPage;
 
   const isDashboardPage = location.pathname === '/dashboard' ||
                          location.pathname === '/profile' ||
                          location.pathname === '/bookings' ||
-                         location.pathname === '/payment-methods' ||
                          location.pathname.startsWith('/bookings/');
 
   const dropdownItems = [
@@ -108,12 +107,6 @@ export function Header({ onGetQuote }: HeaderProps) {
       icon: Calendar,
       href: '/bookings',
       description: 'View upcoming and past bookings'
-    },
-    {
-      label: 'Payment Methods',
-      icon: CreditCard,
-      href: '/payment-methods',
-      description: 'Manage your payment options'
     },
     {
       label: 'Support',

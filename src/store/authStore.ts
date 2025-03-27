@@ -8,7 +8,7 @@ interface AuthState {
   setUser: (user: User | null) => void;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, options?: { data?: Record<string, any> }) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -47,13 +47,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
 
     try {
-      const response = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      }).catch(() => ({
-        error: new Error('Unable to connect to authentication service'),
-        data: { user: null, session: null }
-      }));
+      // Wrap the Supabase call in a try-catch to handle network errors silently
+      const response = await supabase.auth.signInWithPassword({ email, password })
+        .catch(() => ({
+          error: new Error('Unable to connect to authentication service'),
+          data: { user: null, session: null }
+        }));
       
       const { error: signInError, data } = response;
       
@@ -76,8 +75,11 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       set({ user: data.user });
     } catch (error) {
-      // Throw a user-friendly error without logging to console
-      throw new Error(error instanceof Error ? error.message : 'An unexpected error occurred');
+      // Silently handle the error and throw a user-friendly message
+      if (error instanceof Error && error.message.includes('Invalid login credentials')) {
+        throw new Error('Incorrect email or password. Please try again.');
+      }
+      throw new Error('Failed to sign in. Please try again.');
     }
   },
 
@@ -104,7 +106,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   // Sign up with email and password
-  signUp: async (email: string, password: string) => {
+  signUp: async (email: string, password: string, options?: { data?: Record<string, any> }) => {
     // Input validation
     if (!email || !password) {
       throw new Error('Please enter both email and password');
@@ -117,20 +119,28 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (!validatePassword(password)) {
       throw new Error('Password must be at least 6 characters long');
     }
+    console.log("SIGNUP METADATA:", options?.data);
 
+    // Validate required metadata
+    if (!options?.data?.first_name?.trim() || !options?.data?.last_name?.trim() || !options?.data?.phone?.trim()) {
+      throw new Error('Please fill in all required fields');
+    }
     try {
       let response;
       try {
         response = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-            data: {
-              email_confirm: true
-            }
-          }
-        });
+  email,
+  password,
+  options: {
+    emailRedirectTo: `${window.location.origin}/auth/callback`,
+    data: {
+      first_name: options?.data?.first_name,
+      last_name: options?.data?.last_name,
+      phone: options?.data?.phone,
+      full_name: `${options?.data?.first_name} ${options?.data?.last_name}`.trim()
+    }
+  }
+});
       } catch (e) {
         // Silently handle network errors
         throw new Error('Unable to connect to authentication service. Please try again.');
@@ -162,23 +172,20 @@ export const useAuthStore = create<AuthState>((set) => ({
               password
             });
           } catch (e) {
-            // Silently handle network errors during auto-login
-            return;
+            throw new Error('Failed to sign in after signup');
           }
           
           const { error: signInError, data: signInData } = signInResponse;
           
           if (signInError) {
-            // Don't throw, just return - user can sign in manually
-            return;
+            throw signInError;
           }
 
           if (signInData.user) {
             set({ user: signInData.user });
           }
         } catch (error) {
-          // Don't throw on auto-login failure, let user sign in manually
-          return;
+          throw error;
         }
       }
     } catch (error) {

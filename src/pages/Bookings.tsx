@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import { MainLayout } from '../components/layout/MainLayout';
+import { PageLayout } from '../components/layout/PageLayout';
 import { BookingsList } from '../components/bookings/BookingsList';
 import { EmptyState } from '../components/bookings/EmptyState';
 import { useUserData } from '../hooks/useUserData';
@@ -22,26 +22,13 @@ export function Bookings() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 pt-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center text-gray-600 hover:text-emerald-600 transition-colors duration-200 mb-6"
-          >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            <span>Back</span>
-          </button>
-
+      <PageLayout
+        title="My Bookings"
+        subtitle="View and manage your cleaning appointments"
+      >
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Header Section */}
             <div className="lg:col-span-3 bg-white rounded-2xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
-                  <p className="text-sm text-gray-500 mt-1">View and manage your cleaning appointments</p>
-                </div>
-              </div>
-
               {/* Tabs */}
               <div className="flex space-x-4 mt-6">
                 <button
@@ -169,8 +156,7 @@ export function Bookings() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+      </PageLayout>
     </MainLayout>
   );
 }

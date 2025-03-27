@@ -12,7 +12,7 @@ import { AuthSection } from '../components/booking/AuthSection';
 import { SecurityNote } from '../components/booking/SecurityNote';
 import { SuccessMessage } from '../components/booking/SuccessMessage';
 
-export function BookingConfirmation() {
+export function Checkout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signIn, signUp } = useAuth();
@@ -21,6 +21,13 @@ export function BookingConfirmation() {
   const quoteData = location.state?.quoteData as QuoteFormData;
   const timeSlot = location.state?.timeSlot as string;
   
+  // Redirect if no quote data
+  useEffect(() => {
+    if (!quoteData) {
+      navigate('/quote');
+    }
+  }, [quoteData, navigate]);
+
   // Form states
   const [addressForm, setAddressForm] = useState({
     street: '',
@@ -32,7 +39,10 @@ export function BookingConfirmation() {
   const [authForm, setAuthForm] = useState({
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    first_name: '',
+    last_name: '',
+    phone: ''
   });
   
   // Form validation states
@@ -45,13 +55,6 @@ export function BookingConfirmation() {
   const [isComplete, setIsComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [redirectCountdown, setRedirectCountdown] = useState(5);
-
-  // Redirect if no data
-  useEffect(() => {
-    if (!quoteData) {
-      navigate('/quote');
-    }
-  }, [quoteData, navigate]);
 
   // Countdown timer for redirect after successful booking
   useEffect(() => {
@@ -101,9 +104,23 @@ export function BookingConfirmation() {
   // Process the booking
   const processBooking = async () => {
     try {
-      // Calculate prices
-      const basePrice = 50; // Example base price
-      const totalPrice = basePrice;
+      // Calculate base service prices
+      const basePrice = calculateBasePrice(quoteData);
+      
+      // Calculate area charges
+      const areaCharges = calculateAreaCharges(quoteData);
+      
+      // Calculate extra services price
+      const extraServicesPrice = calculateExtraServicesPrice(quoteData);
+      
+      // Calculate subtotal before discount
+      const subtotalPrice = basePrice + areaCharges.total + extraServicesPrice.total;
+      
+      // Calculate discount
+      const { discountPercentage, discountAmount } = calculateDiscount(quoteData, subtotalPrice);
+      
+      // Calculate final total
+      const totalPrice = subtotalPrice - discountAmount;
       
       // Create a booking in the database if user is authenticated
       const { data: sessionData } = await supabase.auth.getSession();
@@ -131,7 +148,18 @@ export function BookingConfirmation() {
             pet_details: quoteData.petDetails,
             access_instructions: quoteData.accessInstructions,
             base_price: basePrice,
-            total_price: totalPrice
+            service_prices: calculateServicePrices(quoteData),
+            area_charges: areaCharges.details,
+            extra_services_price: extraServicesPrice.details,
+            subtotal_price: subtotalPrice,
+            discount_percentage: discountPercentage,
+            discount_amount: discountAmount,
+            total_price: totalPrice,
+            pricing_context: {
+              currency: 'GBP',
+              frequency: quoteData.frequency || 'one-time',
+              timestamp: new Date().toISOString()
+            }
           };
           
           // Insert the booking
@@ -152,10 +180,123 @@ export function BookingConfirmation() {
       // Show success state
       setIsComplete(true);
       setIsProcessing(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       setError('Failed to process booking. Please try again.');
       setIsProcessing(false);
     }
+  };
+
+  // Calculate base price from selected services
+  const calculateBasePrice = (data: QuoteFormData): number => {
+    // Base price for each service type
+    const servicePrices = {
+      regular_home: 30,
+      deep_cleaning: 45,
+      spring_cleaning: 50,
+      end_of_tenancy: 60,
+      move_in_out: 55,
+      post_renovation: 65,
+      office_cleaning: 40,
+      disinfection: 35,
+      retail_cleaning: 45
+    };
+
+    return data.services?.reduce((total, service) => 
+      total + (servicePrices[service as keyof typeof servicePrices] || 0), 0
+    ) || 0;
+  };
+
+  // Calculate individual service prices
+  const calculateServicePrices = (data: QuoteFormData): Record<string, number> => {
+    const servicePrices = {
+      regular_home: 30,
+      deep_cleaning: 45,
+      spring_cleaning: 50,
+      end_of_tenancy: 60,
+      move_in_out: 55,
+      post_renovation: 65,
+      office_cleaning: 40,
+      disinfection: 35,
+      retail_cleaning: 45
+    };
+
+    return data.services?.reduce((prices, service) => ({
+      ...prices,
+      [service]: servicePrices[service as keyof typeof servicePrices] || 0
+    }), {}) || {};
+  };
+
+  // Calculate area charges with details
+  const calculateAreaCharges = (data: QuoteFormData): { total: number; details: Record<string, number> } => {
+    const charges: Record<string, number> = {};
+    let total = 0;
+
+    // Residential areas
+    if (data.residentialAreas && Object.keys(data.residentialAreas).length > 0) {
+      Object.entries(data.residentialAreas).forEach(([area, count]) => {
+        const areaCharge = count * 15;
+        charges[area] = areaCharge;
+        total += areaCharge;
+      });
+    }
+
+    // Commercial areas
+    if (data.commercialAreas && Object.keys(data.commercialAreas).length > 0) {
+      Object.entries(data.commercialAreas).forEach(([area, count]) => {
+        const areaCharge = count * 20;
+        charges[area] = areaCharge;
+        total += areaCharge;
+      });
+    }
+
+    return { total, details: charges };
+  };
+
+  // Calculate extra services price
+  const calculateExtraServicesPrice = (data: QuoteFormData): { total: number; details: Record<string, number> } => {
+    const prices = {
+      ironing: 15,
+      laundry: 20,
+      fridge: 25,
+      oven: 30,
+      windows: 20
+    };
+
+    const details: Record<string, number> = {};
+    let total = 0;
+
+    data.extraServices?.forEach(service => {
+      const price = prices[service as keyof typeof prices] || 0;
+      details[service] = price;
+      total += price;
+    });
+
+    return { total, details };
+  };
+
+  // Calculate discount based on frequency
+  const calculateDiscount = (data: QuoteFormData, subtotal: number): { discountPercentage: number, discountAmount: number } => {
+    let discountPercentage = 0;
+
+    switch (data.frequency) {
+      case 'weekly':
+        discountPercentage = 15;
+        break;
+      case 'biweekly':
+        discountPercentage = 10;
+        break;
+      case 'monthly':
+        discountPercentage = 5;
+        break;
+    }
+
+    const discountAmount = (subtotal * discountPercentage) / 100;
+
+    return {
+      discountPercentage,
+      discountAmount
+    };
   };
 
   // Handle form submission
@@ -220,12 +361,29 @@ export function BookingConfirmation() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setAuthErrors({});
+    setIsProcessing(true);
     
     try {
+      if (!authForm.email || !authForm.password) {
+        setError('Please enter both email and password');
+        setIsProcessing(false);
+        return;
+      }
+
       await signIn(authForm.email, authForm.password);
-      processBooking();
+      // Only process booking after successful login
+      await processBooking();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in. Please try again.');
+      // Handle specific error messages
+      const errorMessage = err instanceof Error ? err.message : '';
+      if (errorMessage.includes('Invalid login credentials')) {
+        setError('Incorrect email or password. Please try again.');
+      } else if (errorMessage.includes('Email not confirmed')) {
+        setError('Please verify your email address before signing in.');
+      } else {
+        setError('Failed to sign in. Please try again.');
+      }
       setIsProcessing(false);
     }
   };
@@ -234,6 +392,26 @@ export function BookingConfirmation() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsProcessing(true);
+    
+    // Validate required fields
+    if (!authForm.first_name?.trim()) {
+      setAuthErrors({ first_name: 'First name is required' });
+      setIsProcessing(false);
+      return;
+    }
+
+    if (!authForm.last_name?.trim()) {
+      setAuthErrors({ last_name: 'Last name is required' });
+      setIsProcessing(false);
+      return;
+    }
+
+    if (!authForm.phone?.trim()) {
+      setAuthErrors({ phone: 'Phone number is required' });
+      setIsProcessing(false);
+      return;
+    }
     
     if (authForm.password !== authForm.confirmPassword) {
       setAuthErrors({ confirmPassword: 'Passwords do not match' });
@@ -242,8 +420,32 @@ export function BookingConfirmation() {
     }
 
     try {
-      await signUp(authForm.email, authForm.password);
-      processBooking();
+      if (!authForm.email || !authForm.password) {
+        throw new Error('Please enter both email and password');
+      }
+
+      // Validate required fields
+      if (!authForm.first_name?.trim()) {
+        throw new Error('First name is required');
+      }
+
+      if (!authForm.last_name?.trim()) {
+        throw new Error('Last name is required');
+      }
+
+      if (!authForm.phone?.trim()) {
+        throw new Error('Phone number is required');
+      }
+
+      await signUp(authForm.email, authForm.password, {
+        data: {
+          first_name: authForm.first_name,
+          last_name: authForm.last_name,
+          phone: authForm.phone
+        }
+      });
+      // Only process booking after successful signup
+      await processBooking();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create account. Please try again.');
       setIsProcessing(false);
@@ -293,8 +495,8 @@ export function BookingConfirmation() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="min-h-screen bg-gray-50 pt-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Back button */}
           <button
             onClick={() => navigate('/quote', { state: { quoteData, showSummary: true } })}
@@ -306,9 +508,9 @@ export function BookingConfirmation() {
           </button>
           
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Complete Your Booking</h1>
-            <p className="text-gray-600 mt-2">Enter your details to confirm your cleaning service</p>
+          <div className="max-w-3xl mx-auto text-center mb-12">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Booking</h1>
+            <p className="text-gray-600">Enter your details to confirm your cleaning service</p>
           </div>
           
           {/* Success message */}
@@ -319,20 +521,10 @@ export function BookingConfirmation() {
             />
           )}
           
-          {/* Error message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-              <div className="flex">
-                <AlertCircle className="h-5 w-5 text-red-500 mr-3 flex-shrink-0 mt-0.5" />
-                <p className="text-red-700">{error}</p>
-              </div>
-            </div>
-          )}
-          
           {!isComplete && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* Main form */}
-              <div className="lg:col-span-7">
+              <div className="lg:col-span-8">
                 <form onSubmit={handleSubmit}>
                   <AddressForm
                     formData={addressForm}
@@ -352,9 +544,17 @@ export function BookingConfirmation() {
                       isProcessing={isProcessing}
                     />
                   )}
-                  
-                  {/* Submit button */}
-                  <div className="flex justify-end">
+                  <div className="flex flex-col space-y-3">
+                    {/* Error message */}
+                    {error && (
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-2 text-sm">
+                        <div className="flex items-center">
+                          <AlertCircle className="h-4 w-4 text-red-500 mr-2 flex-shrink-0" />
+                          <p className="text-red-700">{error}</p>
+                        </div>
+                      </div>
+                    )}
+                    {/* Submit button */}
                     <Button
                       type="submit"
                       isLoading={isProcessing}
@@ -367,7 +567,7 @@ export function BookingConfirmation() {
               </div>
               
               {/* Sidebar */}
-              <div className="lg:col-span-5">
+              <div className="lg:col-span-4">
                 <div className="sticky top-24 space-y-6">
                   <BookingSummary
                     quoteData={quoteData}

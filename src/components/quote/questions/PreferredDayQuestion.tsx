@@ -50,7 +50,7 @@ export function PreferredDayQuestion({
     <div className="w-full">
       <div className="relative">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl blur opacity-25 transition duration-200" />
-        <div className="relative bg-white rounded-xl p-4">
+        <div className="relative bg-white rounded-xl p-6">
           <DatePicker
             selected={selectedDate}
             onChange={handleDateChange}
@@ -59,12 +59,12 @@ export function PreferredDayQuestion({
             filterDate={filterWeekends}
             dateFormat="MMMM d, yyyy"
             inline
-            calendarClassName="w-full"
+            calendarClassName="!w-full"
             monthsShown={1}
             showPopperArrow={false}
             fixedHeight
             shouldCloseOnSelect={false}
-            disabledKeyboardNavigation
+            disabledKeyboardNavigation 
             renderCustomHeader={({
               date,
               decreaseMonth,
@@ -72,12 +72,12 @@ export function PreferredDayQuestion({
               prevMonthButtonDisabled,
               nextMonthButtonDisabled,
             }) => (
-              <div className="flex items-center justify-between px-2 py-2">
+              <div className="flex items-center justify-between py-2">
                 <button
                   onClick={decreaseMonth}
                   disabled={prevMonthButtonDisabled}
                   type="button"
-                  className={`p-1 rounded-full hover:bg-emerald-50 transition-colors duration-200 ${
+                  className={`p-2 rounded-full hover:bg-emerald-50 transition-colors duration-200 ${
                     prevMonthButtonDisabled ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
@@ -85,14 +85,14 @@ export function PreferredDayQuestion({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900 px-4">
                   {date.toLocaleString('default', { month: 'long', year: 'numeric' })}
                 </h3>
                 <button
                   onClick={increaseMonth}
                   disabled={nextMonthButtonDisabled}
                   type="button"
-                  className={`p-1 rounded-full hover:bg-emerald-50 transition-colors duration-200 ${
+                  className={`p-2 rounded-full hover:bg-emerald-50 transition-colors duration-200 ${
                     nextMonthButtonDisabled ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
@@ -104,20 +104,20 @@ export function PreferredDayQuestion({
             )}
             renderDayContents={(day, date) => (
               <div
-                className={`w-full h-full p-2 flex items-center justify-center rounded-lg transition-colors duration-200 ${
+                className={`aspect-square flex items-center justify-center rounded-lg transition-colors duration-200 ${
                   date && selectedDate && 
                   date.getFullYear() === selectedDate.getFullYear() &&
                   date.getMonth() === selectedDate.getMonth() &&
                   date.getDate() === selectedDate.getDate()
                     ? 'bg-emerald-500 text-white'
-                    : 'hover:bg-emerald-50'
+                    : 'hover:bg-emerald-50 text-gray-900'
                 }`}
               >
                 {day}
               </div>
             )}
           />
-          <p className="mt-4 text-sm text-gray-500 text-center">
+          <p className="mt-6 text-sm text-gray-500 text-center">
             Choose any date within the next 3 months (excluding Sundays)
           </p>
         </div>

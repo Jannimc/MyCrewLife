@@ -175,7 +175,7 @@ export function QuoteForm({
    * Navigate directly to booking confirmation page
    */
   const handleContinueToCheckout = () => {
-    navigate('/booking-confirmation', {
+    navigate('/checkout', {
       state: {
         quoteData: formData
       }
@@ -218,7 +218,7 @@ export function QuoteForm({
     return (
       <>
         <div ref={progressBarRef}>
-          <ProgressBar currentStep={totalSteps} totalSteps={totalSteps} />
+          <ProgressBar currentStep={totalSteps - 1} totalSteps={totalSteps} />
         </div>
         <QuoteSummary 
           formData={formData} 
