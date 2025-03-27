@@ -3,6 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { MainLayout } from '../components/layout/MainLayout';
 import { ArrowLeft, ArrowRight, Calendar, Clock, MapPin, User, Star, CheckCircle2, AlertCircle, CreditCard } from 'lucide-react';
 import { useUserData } from '../hooks/useUserData';
+import { Card } from '../components/common/Card';
+import { BookingStatus } from '../components/common/BookingStatus';
+import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
+import { formatDate } from '../utils/date';
 
 export function BookingDetails() {
   const { id } = useParams();
@@ -11,16 +15,6 @@ export function BookingDetails() {
   
   // Find the specific booking
   const booking = bookings.find(b => b.id === id);
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-GB', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-  };
 
   const formatServiceType = (serviceType: string) => {
     return serviceType
@@ -35,35 +29,12 @@ export function BookingDetails() {
       .join(', ');
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'upcoming':
-        return 'bg-emerald-100 text-emerald-800';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   if (loading) {
     return (
       <MainLayout>
         <div className="min-h-screen bg-gray-50 pt-6">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="animate-pulse space-y-6">
-              <div className="h-8 bg-gray-200 rounded w-32"></div>
-              <div className="bg-white rounded-2xl shadow-sm p-6">
-                <div className="h-8 bg-gray-200 rounded w-64 mb-6"></div>
-                <div className="space-y-4">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="h-6 bg-gray-200 rounded w-full"></div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <LoadingSkeleton items={3} />
           </div>
         </div>
       </MainLayout>
@@ -75,7 +46,7 @@ export function BookingDetails() {
       <MainLayout>
         <div className="min-h-screen bg-gray-50 pt-6">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="bg-white rounded-2xl shadow-sm p-6 text-center">
+            <Card className="p-6 text-center">
               <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-900 mb-2">Booking Not Found</h2>
               <p className="text-gray-600 mb-6">The booking you're looking for doesn't exist or has been removed.</p>
@@ -86,7 +57,7 @@ export function BookingDetails() {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Bookings
               </button>
-            </div>
+            </Card>
           </div>
         </div>
       </MainLayout>
@@ -107,28 +78,25 @@ export function BookingDetails() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Header Section */}
-            <div className="lg:col-span-3 bg-white rounded-2xl shadow-sm p-6">
+            <Card className="lg:col-span-3 p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">Booking Details</h1>
                   <p className="text-sm text-gray-500 mt-1">View and manage your cleaning appointment</p>
                 </div>
-                <span className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium ${getStatusColor(booking.status)}`}>
-                  {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                </span>
+                <BookingStatus status={booking.status} size="md" />
               </div>
-            </div>
+            </Card>
 
             {/* Main Content */}
             <div className="lg:col-span-2">
               <div className="space-y-6">
                 {/* Main Details */}
-                <div className="bg-white rounded-2xl shadow-sm p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                    <Calendar className="w-5 h-5 text-emerald-500 mr-2" />
-                    Service Details
-                  </h2>
-
+                <Card 
+                  className="p-6"
+                  title="Service Details"
+                  icon={Calendar}
+                >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div>
@@ -218,64 +186,63 @@ export function BookingDetails() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </Card>
 
                 {/* Schedule & Location */}
-                <div className="bg-white rounded-2xl shadow-sm p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                    <Calendar className="w-5 h-5 text-emerald-500 mr-2" />
-                    Schedule & Location
-                  </h2>
+<Card
+  className="p-6"
+  title="Schedule & Location"
+  icon={Calendar}
+>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="space-y-4">
+      <div className="flex items-center text-gray-600">
+        <Calendar className="w-5 h-5 text-emerald-500 mr-3" />
+        <div>
+          <p className="text-sm font-medium text-gray-900">Date</p>
+          <p>{formatDate(booking.date)}</p>
+        </div>
+      </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center text-gray-600">
-                        <Calendar className="w-5 h-5 text-emerald-500 mr-3" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">Date</p>
-                          <p>{formatDate(booking.date)}</p>
-                        </div>
-                      </div>
+      <div className="flex items-center text-gray-600">
+        <Clock className="w-5 h-5 text-emerald-500 mr-3" />
+        <div>
+          <p className="text-sm font-medium text-gray-900">Time</p>
+          <p>{booking.time}</p>
+        </div>
+      </div>
+    </div>
 
-                      <div className="flex items-center text-gray-600">
-                        <Clock className="w-5 h-5 text-emerald-500 mr-3" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">Time</p>
-                          <p>{booking.time}</p>
-                        </div>
-                      </div>
-                    </div>
+    <div className="space-y-4">
+      <div className="flex items-center text-gray-600">
+        <MapPin className="w-5 h-5 text-emerald-500 mr-3" />
+        <div>
+          <p className="text-sm font-medium text-gray-900">Location</p>
+          <p>{booking.address}</p>
+        </div>
+      </div>
 
-                    <div className="space-y-4">
-                      <div className="flex items-center text-gray-600">
-                        <MapPin className="w-5 h-5 text-emerald-500 mr-3" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">Location</p>
-                          <p>{booking.address}</p>
-                        </div>
-                      </div>
+      <div className="flex items-center text-gray-600">
+        <User className="w-5 h-5 text-emerald-500 mr-3" />
+        <div>
+          <p className="text-sm font-medium text-gray-900">Cleaner</p>
+          <p>{booking.cleaner}</p>
+        </div>
+      </div>
 
-                      <div className="flex items-center text-gray-600">
-                        <User className="w-5 h-5 text-emerald-500 mr-3" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">Cleaner</p>
-                          <p>{booking.cleaner}</p>
-                        </div>
-                      </div>
-
-                      {booking.rating && (
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">Rating</p>
-                          <div className="flex items-center mt-1">
-                            {[...Array(booking.rating)].map((_, i) => (
-                              <Star key={i} className="w-5 h-5 text-emerald-500 fill-current" />
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+      {booking.rating && (
+        <div>
+          <p className="text-sm font-medium text-gray-900">Rating</p>
+          <div className="flex items-center mt-1">
+            {[...Array(booking.rating)].map((_, i) => (
+              <Star key={i} className="w-5 h-5 text-emerald-500 fill-current" />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+</Card>
 
                 {/* Additional Details */}
                 <div className="bg-white rounded-2xl shadow-sm p-6">

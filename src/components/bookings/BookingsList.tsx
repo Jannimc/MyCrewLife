@@ -1,8 +1,14 @@
 import React from 'react';
-import { Calendar, Clock, MapPin, User, Star, AlertCircle, XCircle } from 'lucide-react';
+import { Calendar, Clock, User, Star, AlertCircle, XCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Booking, useUserData } from '../../hooks/useUserData';
 import { useNavigate } from 'react-router-dom';
+import { Card } from '../common/Card';
+import { BookingStatus } from '../common/BookingStatus';
+import { AddressDisplay } from '../common/AddressDisplay';
+import { ActionButtons } from '../common/ActionButtons';
+import { LoadingSkeleton } from '../common/LoadingSkeleton';
+import { formatDate } from '../../utils/date';
 
 interface BookingsListProps {
   bookings: Booking[];
@@ -16,7 +22,7 @@ export function BookingsList({ bookings, type, onCountChange }: BookingsListProp
   const [success, setSuccess] = React.useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = React.useState<string | null>(null);
   const [localBookings, setLocalBookings] = React.useState<Booking[]>(bookings);
-  const { refetchUserData } = useUserData();
+  const { refetchUserData, loading } = useUserData();
   const navigate = useNavigate();
 
   // Update local bookings when props change
@@ -117,6 +123,12 @@ export function BookingsList({ bookings, type, onCountChange }: BookingsListProp
     }
   };
 
+  if (loading) {
+    return (
+      <LoadingSkeleton items={2} type="list" />
+    );
+  }
+
   return (
     <div className="space-y-4">
       {error && (
@@ -174,86 +186,70 @@ export function BookingsList({ bookings, type, onCountChange }: BookingsListProp
         </div>
       )}
       
-      {localBookings.map((booking) => (
-        <div
-          key={booking.id}
-          className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200"
-        >
-          <div className="p-6">
-            {/* Service Type & Duration */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <span className="text-base font-semibold text-gray-900">{formatServiceType(booking.service_type)}</span>
-                <span className="mx-2 text-gray-300">•</span>
-                <span className="text-sm text-gray-500">{booking.duration}</span>
-              </div>
-              {type === 'past' && booking.rating && (
+      {localBookings.length > 0 ? (
+        localBookings.map((booking) => (
+          <div
+            key={booking.id} 
+            className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200"
+          >
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
-                  {[...Array(booking.rating)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-emerald-500 fill-current" />
-                  ))}
+                  <span className="text-base font-medium text-gray-900">{formatServiceType(booking.service_type)}</span>
+                  <span className="mx-2 text-gray-300">•</span>
+                  <span className="text-sm text-gray-500">{booking.duration}</span>
                 </div>
-              )}
-            </div>
+                <BookingStatus status={booking.status} />
+              </div>
 
-            {/* Booking Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="flex items-center text-gray-600">
-                  <Calendar className="w-5 h-5 mr-2 text-emerald-500" />
-                  <span className="text-sm">{formatDate(booking.date)}</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="flex items-center text-gray-600">
+                    <Calendar className="w-5 h-5 mr-2 text-emerald-500" />
+                    <span className="text-sm">{formatDate(booking.date)}</span>
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <Clock className="w-5 h-5 mr-2 text-emerald-500" />
+                    <span className="text-sm">{booking.time}</span>
+                  </div>
                 </div>
-                <div className="flex items-center text-gray-600">
-                  <Clock className="w-5 h-5 mr-2 text-emerald-500" />
-                  <span className="text-sm">{booking.time}</span>
+                <div className="space-y-3">
+                  <AddressDisplay address={booking.address} />
+                  <div className="flex items-center text-gray-600">
+                    <User className="w-5 h-5 mr-2 text-emerald-500" />
+                    <span className="text-sm">{booking.cleaner}</span>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-3">
-                <div className="flex items-center text-gray-600">
-                  <MapPin className="w-5 h-5 mr-2 text-emerald-500" />
-                  <span className="text-sm">{booking.address}</span>
-                </div>
-                <div className="flex items-center text-gray-600">
-                  <User className="w-5 h-5 mr-2 text-emerald-500" />
-                  <span className="text-sm">{booking.cleaner}</span>
-                </div>
+              <div className="mt-6 flex items-center justify-end space-x-3">
+                <button
+                  onClick={() => navigate(`/bookings/${booking.id}`)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                >
+                  View Details
+                </button>
+                {type === 'upcoming' ? (
+                  <button
+                    onClick={() => handleCancelClick(booking.id)}
+                    className="px-4 py-2 border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors duration-200"
+                  >
+                    Cancel
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => navigate('/quote')}
+                    className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity duration-200"
+                  >
+                    Book Again
+                  </button>
+                )}
               </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="mt-6 flex items-center justify-end space-x-3">
-              <button
-                onClick={() => navigate(`/bookings/${booking.id}`)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-              >
-                View Details
-              </button>
-              {type === 'upcoming' ? (
-                <button
-                  onClick={() => handleCancelClick(booking.id)}
-                  className="px-4 py-2 border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-              ) : type === 'past' && booking.status === 'completed' ? (
-                <button
-                  onClick={() => {}}
-                  className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity duration-200"
-                >
-                  Book Again
-                </button>
-              ) : type === 'cancelled' && (
-                <button
-                  onClick={() => navigate('/quote')}
-                  className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity duration-200"
-                >
-                  Book Again
-                </button>
-              )}
             </div>
           </div>
-        </div>
-      ))}
+        ))
+      ) : (
+        <EmptyState type={type} />
+      )}
     </div>
   );
 }
