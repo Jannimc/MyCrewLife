@@ -22,10 +22,11 @@ interface Suggestion {
 interface PostcodeInputProps {
   value: string;
   onChange: (value: string) => void;
+  onAddressSelect?: (address: Address) => void;
   onValidate?: () => void;
 }
 
-export function PostcodeInput({ value, onChange, onValidate, error }: PostcodeInputProps) {
+export function PostcodeInput({ value, onChange, onAddressSelect, onValidate, error }: PostcodeInputProps) {
   const { user } = useAuth();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -155,6 +156,10 @@ export function PostcodeInput({ value, onChange, onValidate, error }: PostcodeIn
   const handleAddressSelect = (address: Address) => {
     // First update the input value
     onChange(address.postcode);
+    // Notify parent component about selected address
+    if (onAddressSelect) {
+      onAddressSelect(address);
+    }
     setShowDropdown(false);
     // Validate the selected postcode
     validatePostcode(address.postcode);

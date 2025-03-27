@@ -28,10 +28,11 @@ const slides = [
 interface HeroProps {
   postcode: string;
   setPostcode: (postcode: string) => void;
+  onAddressSelect?: (address: Address) => void;
   onGetQuote: () => void;
 }
 
-export function Hero({ postcode, setPostcode, onGetQuote }: HeroProps) {
+export function Hero({ postcode, setPostcode, onAddressSelect, onGetQuote }: HeroProps) {
   const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -60,6 +61,11 @@ export function Hero({ postcode, setPostcode, onGetQuote }: HeroProps) {
     setIsTransitioning(true);
     setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
     setTimeout(() => setIsTransitioning(false), 500);
+  };
+
+  const handleValidate = () => {
+    // Reset error state when validation is triggered
+    setError(null);
   };
 
   const validatePostcode = async (postcode: string) => {
@@ -182,12 +188,10 @@ export function Hero({ postcode, setPostcode, onGetQuote }: HeroProps) {
                     <div className="flex-1 min-w-0">
                       <PostcodeInput
                         value={postcode}
-                        onChange={(value) => {
-                          setPostcode(value);
-                          setError(null);
-                        }}
+                        onChange={setPostcode}
+                        onAddressSelect={onAddressSelect}
+                        onValidate={handleValidate}
                         error={error}
-                        isValidating={isValidating}
                       />
                     </div>
                     <div className="w-full sm:w-[180px] flex-shrink-0">

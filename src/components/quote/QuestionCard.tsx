@@ -6,12 +6,14 @@ interface QuestionCardProps {
   question: Question;
   value: any;
   onChange: (value: any) => void;
+  onAddressSelect?: (address: Address) => void;
 }
 
 export function QuestionCard({
   question,
   value,
   onChange,
+  onAddressSelect
 }: QuestionCardProps) {
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6">
@@ -27,6 +29,7 @@ export function QuestionCard({
           question={question}
           value={value}
           onChange={onChange}
+          onAddressSelect={onAddressSelect}
         />
       </div>
     </div>

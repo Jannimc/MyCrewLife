@@ -19,6 +19,7 @@ export function Checkout() {
   
   // Get data from location state
   const quoteData = location.state?.quoteData as QuoteFormData;
+  const selectedAddress = quoteData?.selectedAddress;
   const timeSlot = location.state?.timeSlot as string;
   
   // Redirect if no quote data
@@ -30,8 +31,8 @@ export function Checkout() {
 
   // Form states
   const [addressForm, setAddressForm] = useState({
-    street: '',
-    city: '',
+    street: selectedAddress?.street || '',
+    city: selectedAddress?.city || '',
     postcode: quoteData?.postcode || '',
     saveAddress: true
   });

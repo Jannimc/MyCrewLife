@@ -12,17 +12,28 @@ export function Home() {
   const [postcode, setPostcode] = useState('');
   const [activeService, setActiveService] = useState(null);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const navigate = useNavigate();
 
   useScrollAnimation();
 
   const handleGetQuote = () => {
-    navigate('/quote', { state: { postcode } });
+    navigate('/quote', { 
+      state: { 
+        postcode,
+        selectedAddress 
+      } 
+    });
   };
 
   return (
     <MainLayout onGetQuote={handleGetQuote}>
-      <Hero postcode={postcode} setPostcode={setPostcode} onGetQuote={handleGetQuote} />
+      <Hero 
+        postcode={postcode} 
+        setPostcode={setPostcode} 
+        onAddressSelect={setSelectedAddress}
+        onGetQuote={handleGetQuote} 
+      />
       <div className="scroll-fade-in">
         <PartnerLogos />
       </div>

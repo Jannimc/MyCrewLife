@@ -11,6 +11,7 @@ import { AlertCircle } from 'lucide-react';
 interface QuoteFormProps {
   initialFormData: QuoteFormData;
   onUpdate: (formData: QuoteFormData) => void;
+  onAddressSelect?: (address: Address) => void;
   initialShowSummary?: boolean;
 }
 
@@ -20,6 +21,7 @@ interface QuoteFormProps {
 export function QuoteForm({ 
   initialFormData, 
   onUpdate, 
+  onAddressSelect,
   initialShowSummary = false 
 }: QuoteFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -94,9 +96,23 @@ export function QuoteForm({
    * Handle input change for the current question
    */
   const handleInputChange = (value: any) => {
+    // Handle address selection which includes both postcode and selectedAddress
+    if (typeof value === 'object' && value.postcode && value.selectedAddress) {
+      setFormData(prev => ({
+        ...prev,
+        postcode: value.postcode,
+        selectedAddress: value.selectedAddress
+      }));
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
-      [currentQuestion.id]: value
+      [currentQuestion.id]: value,
+      // Clear selected address when postcode changes manually
+      ...(currentQuestion.id === 'postcode' && typeof value === 'string' 
+        ? { selectedAddress: undefined } 
+        : {})
     }));
 
     // Only reset error when changing postcode
@@ -128,7 +144,12 @@ export function QuoteForm({
   const handleNext = async () => {
     // For postcode question, validate before proceeding
     if (currentQuestion.id === 'postcode') {
-      await validatePostcode(formData.postcode);
+      if (formData.selectedAddress) {
+        setCurrentStep(prev => prev + 1);
+        setTimeout(scrollToProgress, 100);
+      } else {
+        await validatePostcode(formData.postcode);
+      }
       return;
     }
 
@@ -253,6 +274,7 @@ export function QuoteForm({
         question={currentQuestion}
         value={formData[currentQuestion.id as keyof QuoteFormData]}
         onChange={handleInputChange}
+        onAddressSelect={onAddressSelect}
       />
       <NavigationButtons
         onBack={handleBack}

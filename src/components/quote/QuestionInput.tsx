@@ -18,9 +18,10 @@ interface QuestionInputProps {
   question: Question;
   value: any;
   onChange: (value: any) => void;
+  onAddressSelect?: (address: Address) => void;
 }
 
-export function QuestionInput({ question, value, onChange }: QuestionInputProps) {
+export function QuestionInput({ question, value, onChange, onAddressSelect }: QuestionInputProps) {
   const [customValues, setCustomValues] = useState<Record<string, string>>({});
   const [hoveredService, setHoveredService] = useState<string | null>(null);
 
@@ -34,7 +35,7 @@ export function QuestionInput({ question, value, onChange }: QuestionInputProps)
   switch (question.type) {
     case 'text':
       if (question.id === 'postcode') {
-        return <PostcodeQuestion value={value as string} onChange={onChange} />;
+        return <PostcodeQuestion value={value as string} onChange={onChange} onAddressSelect={onAddressSelect} />;
       }
 
       if (question.id === 'customAreaName') {

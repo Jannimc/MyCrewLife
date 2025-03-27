@@ -1,5 +1,6 @@
 export interface QuoteFormData {
   postcode: string;
+  selectedAddress?: Address;
   propertyType: string;
   residentialAreas: Record<string, number>;
   commercialAreas: Record<string, number>;

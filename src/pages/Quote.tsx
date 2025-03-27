@@ -18,12 +18,14 @@ export function Quote() {
   
   // Get data from location state
   const postcode = location.state?.postcode || '';
+  const selectedAddress = location.state?.selectedAddress as Address;
   const initialShowSummary = location.state?.showSummary || false;
   const stateQuoteData = location.state?.quoteData;
 
   // Default form data
   const defaultFormData: QuoteFormData = {
     postcode,
+    selectedAddress,
     propertyType: '',
     residentialAreas: {},
     commercialAreas: {},

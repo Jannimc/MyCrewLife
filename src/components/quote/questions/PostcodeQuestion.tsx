@@ -4,9 +4,10 @@ import { PostcodeInput } from '../../common/PostcodeInput';
 interface PostcodeQuestionProps {
   value: string;
   onChange: (value: string) => void;
+  onAddressSelect?: (address: Address) => void;
 }
 
-export function PostcodeQuestion({ value, onChange }: PostcodeQuestionProps) {
+export function PostcodeQuestion({ value, onChange, onAddressSelect }: PostcodeQuestionProps) {
   const [error, setError] = useState<string | null>(null);
 
   // Clear error when input changes
@@ -28,6 +29,14 @@ export function PostcodeQuestion({ value, onChange }: PostcodeQuestionProps) {
       <PostcodeInput
         value={value}
         onChange={onChange}
+        onAddressSelect={(address) => {
+          // Update both postcode and selected address
+          onChange({
+            postcode: address.postcode,
+            selectedAddress: address
+          });
+          onAddressSelect?.(address);
+        }}
         error={error}
         onValidate={handleValidate}
       />
