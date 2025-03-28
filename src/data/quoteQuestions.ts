@@ -13,78 +13,6 @@ export const questions: Question[] = [
     }
   },
   {
-    id: 'services',
-    title: 'Which service/services do you want?',
-    description: 'Select the cleaning services you need',
-    type: 'multiselect',
-    options: [
-      {
-        value: 'regular_home',
-        label: 'Regular Home Cleaning',
-        description: 'Weekly or bi-weekly cleaning to keep your home spotless',
-        features: ['Dusting & wiping', 'Vacuuming & mopping', 'Kitchen & bathroom cleaning', 'Bed making'],
-        icon: Home
-      },
-      {
-        value: 'deep_cleaning',
-        label: 'Deep Cleaning',
-        description: 'Thorough cleaning of every nook and cranny',
-        features: ['Inside cabinets', 'Behind appliances', 'Window cleaning', 'Deep carpet cleaning'],
-        icon: Sparkles
-      },
-      {
-        value: 'spring_cleaning',
-        label: 'Spring Cleaning',
-        description: 'Annual deep clean to refresh your space',
-        features: ['Seasonal decluttering', 'Deep sanitization', 'Window washing', 'Furniture cleaning'],
-        icon: Brush
-      },
-      {
-        value: 'end_of_tenancy',
-        label: 'End of Tenancy',
-        description: 'Get your deposit back with our thorough cleaning',
-        features: ['Full property cleaning', 'Oven & appliance cleaning', 'Carpet deep clean', 'Window cleaning'],
-        icon: Key
-      },
-      {
-        value: 'move_in_out',
-        label: 'Move In/Out Cleaning',
-        description: 'Start fresh in your new home',
-        features: ['Pre-move cleaning', 'Post-move cleaning', 'Cabinet sanitization', 'Floor restoration'],
-        icon: Box
-      },
-      {
-        value: 'post_renovation',
-        label: 'Post-Renovation Cleaning',
-        description: 'Professional cleanup after construction or renovation',
-        features: ['Construction debris removal', 'Dust & particle cleaning', 'Surface sanitization', 'Paint spot removal'],
-        icon: Hammer
-      },
-      {
-        value: 'office_cleaning',
-        label: 'Office Cleaning',
-        description: 'Professional cleaning services for workspaces',
-        features: ['Workspace sanitization', 'Kitchen & break rooms', 'Meeting rooms', 'Reception areas'],
-        icon: Building
-      },
-      {
-        value: 'disinfection',
-        label: 'Disinfection Service',
-        description: 'Sanitization and disinfection of high-touch areas',
-        features: ['Surface disinfection', 'Air purification', 'Touch point cleaning', 'EPA-approved products'],
-        icon: SprayCan
-      },
-      {
-        value: 'retail_cleaning',
-        label: 'Retail Store Cleaning',
-        description: 'Comprehensive cleaning for retail environments',
-        features: ['Floor maintenance', 'Window cleaning', 'Display area dusting', 'High-touch sanitization'],
-        icon: Store
-      }
-    ],
-    validation: { required: true }
-  },
-  {
     id: 'propertyType',
     title: 'What type of property needs cleaning?',
     description: 'Select the type of property that best describes your space',
@@ -104,6 +32,91 @@ export const questions: Question[] = [
           { value: 'caravan', label: 'Caravan' },
           { value: 'custom', label: 'Custom' }
         ]
+      }
+    ],
+    validation: { required: true }
+  },
+  {
+    id: 'services',
+    title: 'Which service/services do you want?',
+    description: 'Select the cleaning services you need',
+    type: 'multiselect',
+    conditional: {
+      field: 'propertyType',
+      value: ['house', 'apartment', 'office', 'retail', 'other']
+    },
+    options: [
+      {
+        value: 'regular_home',
+        label: 'Regular Home Cleaning',
+        description: 'Weekly or bi-weekly cleaning to keep your home spotless',
+        features: ['Dusting & wiping', 'Vacuuming & mopping', 'Kitchen & bathroom cleaning', 'Bed making'],
+        icon: Home,
+        showFor: ['house', 'apartment']
+      },
+      {
+        value: 'deep_cleaning',
+        label: 'Deep Cleaning',
+        description: 'Thorough cleaning of every nook and cranny',
+        features: ['Inside cabinets', 'Behind appliances', 'Window cleaning', 'Deep carpet cleaning'],
+        icon: Sparkles,
+        showFor: ['house', 'apartment']
+      },
+      {
+        value: 'spring_cleaning',
+        label: 'Spring Cleaning',
+        description: 'Annual deep clean to refresh your space',
+        features: ['Seasonal decluttering', 'Deep sanitization', 'Window washing', 'Furniture cleaning'],
+        icon: Brush,
+        showFor: ['house', 'apartment']
+      },
+      {
+        value: 'end_of_tenancy',
+        label: 'End of Tenancy',
+        description: 'Get your deposit back with our thorough cleaning',
+        features: ['Full property cleaning', 'Oven & appliance cleaning', 'Carpet deep clean', 'Window cleaning'],
+        icon: Key,
+        showFor: ['house', 'apartment']
+      },
+      {
+        value: 'move_in_out',
+        label: 'Move In/Out Cleaning',
+        description: 'Start fresh in your new home',
+        features: ['Pre-move cleaning', 'Post-move cleaning', 'Cabinet sanitization', 'Floor restoration'],
+        icon: Box,
+        showFor: ['house', 'apartment']
+      },
+      {
+        value: 'post_renovation',
+        label: 'Post-Renovation Cleaning',
+        description: 'Professional cleanup after construction or renovation',
+        features: ['Construction debris removal', 'Dust & particle cleaning', 'Surface sanitization', 'Paint spot removal'],
+        icon: Hammer,
+        showFor: ['house', 'apartment', 'office', 'retail']
+      },
+      {
+        value: 'office_cleaning',
+        label: 'Office Cleaning',
+        description: 'Professional cleaning services for workspaces',
+        features: ['Workspace sanitization', 'Kitchen & break rooms', 'Meeting rooms', 'Reception areas'],
+        icon: Building,
+        showFor: ['office']
+      },
+      {
+        value: 'disinfection',
+        label: 'Disinfection Service',
+        description: 'Sanitization and disinfection of high-touch areas',
+        features: ['Surface disinfection', 'Air purification', 'Touch point cleaning', 'EPA-approved products'],
+        icon: SprayCan,
+        showFor: ['house', 'apartment', 'office', 'retail']
+      },
+      {
+        value: 'retail_cleaning',
+        label: 'Retail Store Cleaning',
+        description: 'Comprehensive cleaning for retail environments',
+        features: ['Floor maintenance', 'Window cleaning', 'Display area dusting', 'High-touch sanitization'],
+        icon: Store,
+        showFor: ['retail']
       }
     ],
     validation: { required: true }

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { CheckCircle } from 'lucide-react';
-import { Home, Sparkles, Brush, Key, Box, Building, SprayCan, Hammer, Store } from 'lucide-react';
+import { CheckCircle2, CheckCircle } from 'lucide-react';
+import { questions } from '../../../data/quoteQuestions';
+import { useQuoteStore } from '../../../store/quoteStore';
+import { useEffect } from 'react';
 
 interface ServicesQuestionProps {
   value: string[];
@@ -11,77 +13,28 @@ export function ServicesQuestion({
   value,
   onChange
 }: ServicesQuestionProps) {
+  const propertyType = useQuoteStore(state => state.formData.propertyType);
   const [hoveredService, setHoveredService] = useState<string | null>(null);
 
-  const options = [
-    {
-      value: 'regular_home',
-      label: 'Regular Home Cleaning',
-      description: 'Weekly or bi-weekly cleaning to keep your home spotless',
-      features: ['Dusting & wiping', 'Vacuuming & mopping', 'Kitchen & bathroom cleaning', 'Bed making'],
-      icon: Home
-    },
-    {
-      value: 'deep_cleaning',
-      label: 'Deep Cleaning',
-      description: 'Thorough cleaning of every nook and cranny',
-      features: ['Inside cabinets', 'Behind appliances', 'Window cleaning', 'Deep carpet cleaning'],
-      icon: Sparkles
-    },
-    {
-      value: 'spring_cleaning',
-      label: 'Spring Cleaning',
-      description: 'Annual deep clean to refresh your space',
-      features: ['Seasonal decluttering', 'Deep sanitization', 'Window washing', 'Furniture cleaning'],
-      icon: Brush
-    },
-    {
-      value: 'end_of_tenancy',
-      label: 'End of Tenancy',
-      description: 'Get your deposit back with our thorough cleaning',
-      features: ['Full property cleaning', 'Oven & appliance cleaning', 'Carpet deep clean', 'Window cleaning'],
-      icon: Key
-    },
-    {
-      value: 'move_in_out',
-      label: 'Move In/Out Cleaning',
-      description: 'Start fresh in your new home',
-      features: ['Pre-move cleaning', 'Post-move cleaning', 'Cabinet sanitization', 'Floor restoration'],
-      icon: Box
-    },
-    {
-      value: 'post_renovation',
-      label: 'Post-Renovation Cleaning',
-      description: 'Professional cleanup after construction or renovation',
-      features: ['Construction debris removal', 'Dust & particle cleaning', 'Surface sanitization', 'Paint spot removal'],
-      icon: Hammer
-    },
-    {
-      value: 'office_cleaning',
-      label: 'Office Cleaning',
-      description: 'Professional cleaning services for workspaces',
-      features: ['Workspace sanitization', 'Kitchen & break rooms', 'Meeting rooms', 'Reception areas'],
-      icon: Building
-    },
-    {
-      value: 'disinfection',
-      label: 'Disinfection Service',
-      description: 'Sanitization and disinfection of high-touch areas',
-      features: ['Surface disinfection', 'Air purification', 'Touch point cleaning', 'EPA-approved products'],
-      icon: SprayCan
-    },
-    {
-      value: 'retail_cleaning',
-      label: 'Retail Store Cleaning',
-      description: 'Comprehensive cleaning for retail environments',
-      features: ['Floor maintenance', 'Window cleaning', 'Display area dusting', 'High-touch sanitization'],
-      icon: Store
-    }
-  ];
+  useEffect(() => {
+    console.log('Current property type:', propertyType);
+  }, [propertyType]);
+
+  // Get services from questions array
+  const servicesQuestion = questions.find(q => q.id === 'services');
+  const services = servicesQuestion?.options || [];
+
+  // Filter services based on property type
+  const filteredServices = propertyType ? services.filter(service => 
+    service.showFor?.includes(propertyType)
+  ) : [];
+
+  console.log('Property Type:', propertyType);
+  console.log('Filtered Services:', filteredServices);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {options.map(option => {
+      {filteredServices.map(option => {
         const Icon = option.icon;
         const isSelected = value?.includes(option.value);
         const isHovered = hoveredService === option.value;
@@ -113,7 +66,7 @@ export function ServicesQuestion({
                   <div className="ml-4 flex-1 min-w-0">
                     <h3 className="text-base font-semibold text-gray-900 truncate">{option.label}</h3>
                   </div>
-                  {isSelected && (
+                  {value?.includes(option.value) && (
                     <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 ml-2" />
                   )}
                 </div>
@@ -128,7 +81,7 @@ export function ServicesQuestion({
                   <div className="relative bg-white p-4 rounded-xl shadow-lg border border-gray-100">
                     <p className="text-gray-600 text-sm mb-4">{option.description}</p>
                     <ul className="space-y-2">
-                      {option.features.map((feature, index) => (
+                      {option.features?.map((feature, index) => (
                         <li key={index} className="text-sm text-gray-600 flex items-center">
                           <CheckCircle className="w-4 h-4 text-emerald-500 mr-2 flex-shrink-0" />
                           {feature}

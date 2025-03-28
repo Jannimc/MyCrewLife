@@ -7,6 +7,8 @@ import { QuestionCard } from './QuestionCard';
 import { NavigationButtons } from './NavigationButtons';
 import { QuoteSummary } from './QuoteSummary';
 import { AlertCircle } from 'lucide-react';
+import { QuickFAQs } from './QuickFAQs';
+import { useQuoteStore } from '../../store/quoteStore';
 
 interface QuoteFormProps {
   initialFormData: QuoteFormData;
@@ -32,6 +34,7 @@ export function QuoteForm({
   const [showSummary, setShowSummary] = useState(initialShowSummary);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
+  const setQuoteFormData = useQuoteStore(state => state.setFormData);
   const navigate = useNavigate();
 
   // Validate postcode on initial mount if provided

@@ -1,6 +1,7 @@
 export interface QuoteFormData {
   postcode: string;
   selectedAddress?: Address;
+  services: string[];
   propertyType: string;
   residentialAreas: Record<string, number>;
   commercialAreas: Record<string, number>;
@@ -19,6 +20,10 @@ export interface QuoteFormData {
 export interface QuestionOption {
   value: string;
   label: string;
+  description?: string;
+  features?: string[];
+  icon?: any;
+  showFor?: string[];
   subOptions?: QuestionOption[];
 }
 

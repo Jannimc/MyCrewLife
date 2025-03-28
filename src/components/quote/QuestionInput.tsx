@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle } from 'lucide-react';
 import { Question, QuestionOption } from '../../types/quote';
 import { OtherDropdown } from './OtherDropdown';
 import { PostcodeQuestion } from './questions/PostcodeQuestion';
+import { useQuoteStore } from '../../store/quoteStore';
 import { PropertyTypeQuestion } from './questions/PropertyTypeQuestion';
 import { ResidentialAreasQuestion } from './questions/ResidentialAreasQuestion';
 import { CommercialAreasQuestion } from './questions/CommercialAreasQuestion';
@@ -22,8 +23,14 @@ interface QuestionInputProps {
 }
 
 export function QuestionInput({ question, value, onChange, onAddressSelect }: QuestionInputProps) {
+  const setFormData = useQuoteStore(state => state.setFormData);
   const [customValues, setCustomValues] = useState<Record<string, string>>({});
   const [hoveredService, setHoveredService] = useState<string | null>(null);
+
+  // Update store when value changes
+  useEffect(() => {
+    setFormData({ [question.id]: value });
+  }, [value, question.id, setFormData]);
 
   const handleCustomValueChange = (optionValue: string, newValue: string) => {
     setCustomValues(prev => ({
